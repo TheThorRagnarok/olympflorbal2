@@ -1,0 +1,1659 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>Olymp Florbal Tréninky</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="description" content="Sestavovač florbalových tréninků, knihovna aktivit a 20týdenní plán pro trenéra Olymp Florbal.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Olymp Tréninky">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<style>
+/* ============ Tokeny ============ */
+:root{
+  color-scheme: light dark;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bg:#f2f2f7; --card:#ffffff; --card2:#f2f2f7; --fill:rgba(118,118,128,.14);
+  --text:#1c1c1e; --text2:#636366;
+  --sep:rgba(60,60,67,.16); --sep-strong:rgba(60,60,67,.34);
+  --accent:#d91f26; --accent-press:#b5181e; --accent-text:#c4161c; --accent-bg:rgba(217,31,38,.09); --on-accent:#fff;
+  --warm:#a85a00;  --warm-bg:rgba(255,149,0,.16);
+  --drill:#0a62c9; --drill-bg:rgba(10,98,201,.11);
+  --game:#1a7f37;  --game-bg:rgba(26,127,55,.12);
+  --ok:#1a7f37; --ok-bg:rgba(26,127,55,.12); --warn:#a85a00; --warn-bg:rgba(255,149,0,.18); --info:#0a62c9; --info-bg:rgba(10,98,201,.11);
+  --hdr-bg:rgba(242,242,247,.74); --scrim:rgba(0,0,0,.38);
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 6px 20px rgba(0,0,0,.06);
+  --shadow-lift:0 14px 34px rgba(0,0,0,.26), 0 3px 8px rgba(0,0,0,.18);
+  --r:16px; --r-sm:12px;
+  --hdr-h:104px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#000; --card:#1c1c1e; --card2:#2c2c2e; --fill:rgba(118,118,128,.28);
+    --text:#f5f5f7; --text2:#a1a1a6;
+    --sep:rgba(84,84,88,.6); --sep-strong:rgba(120,120,128,.7);
+    --accent:#e5343b; --accent-press:#c92a30; --accent-text:#ff6b71; --accent-bg:rgba(255,69,76,.16);
+    --warm:#ffb040; --warm-bg:rgba(255,159,10,.18);
+    --drill:#5eb0ff; --drill-bg:rgba(10,132,255,.2);
+    --game:#4cd270; --game-bg:rgba(48,209,88,.16);
+    --ok:#4cd270; --ok-bg:rgba(48,209,88,.16); --warn:#ffb040; --warn-bg:rgba(255,159,10,.2); --info:#5eb0ff; --info-bg:rgba(10,132,255,.2);
+    --hdr-bg:rgba(0,0,0,.62); --scrim:rgba(0,0,0,.56);
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+    --shadow-lift:0 14px 34px rgba(0,0,0,.6), 0 3px 8px rgba(0,0,0,.5);
+  }
+}
+@media (prefers-contrast: more){
+  :root{ --text2:var(--text); --sep:rgba(0,0,0,.62); --sep-strong:#000; --accent-text:#8f0d12; --card2:#e8e8ed; }
+  .card,.block,.gcard,.lcard,.week,.ccard,.sheet,.toast,.next,.prow,.arow,.chip,.btn,.seg,.mini-seg,.pill{ border:1px solid var(--sep-strong) !important; }
+}
+@media (prefers-contrast: more) and (prefers-color-scheme: dark){
+  :root{ --sep:rgba(255,255,255,.7); --sep-strong:#fff; --accent-text:#ff9a9e; --card2:#2c2c2e; }
+}
+@media (prefers-reduced-transparency: reduce){
+  .hdr{ background:var(--bg) !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+  .scrim{ background:rgba(0,0,0,.6) !important; }
+}
+
+/* ============ Základ ============ */
+*,*::before,*::after{ box-sizing:border-box; }
+[hidden]{ display:none !important; }
+html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; overscroll-behavior:none; background:var(--bg); }
+body{
+  margin:0; min-height:100dvh; overscroll-behavior:none;
+  font:400 16px/1.4 var(--font); color:var(--text); background:var(--bg);
+  -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
+}
+h1,h2,h3,h4{ margin:0; letter-spacing:-.022em; line-height:1.2; font-weight:700; }
+p{ margin:0; }
+button,input,textarea{ font:inherit; color:inherit; }
+button{ background:none; border:0; padding:0; margin:0; cursor:pointer; text-align:inherit; }
+svg{ display:block; flex:none; }
+:focus-visible{ outline:2px solid var(--accent-text); outline-offset:2px; border-radius:6px; }
+
+/* ovládací prvky: žádné výběry textu, žádné zpoždění klepnutí */
+button,a,label,summary,input,textarea,.tap,[role="button"],[role="tab"],[role="switch"]{ touch-action:manipulation; }
+button,summary,label,.tap,.chip,.seg,.gcard,.stepper,.grip,.tag,.pill{
+  -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;
+}
+.grip{ touch-action:none; }                   /* na dotyku se táhne jen za úchyt */
+
+/* odezva na dotyk – pointerdown přidá .pressed, :active je záloha */
+.tap{ transition:transform .18s cubic-bezier(.32,.72,0,1), opacity .18s, background-color .18s; }
+.tap:active,.tap.pressed{ transform:scale(.96); opacity:.78; transition-duration:.06s; }
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{ filter:brightness(.97); }
+  .btn.primary:hover{ background:var(--accent-press); filter:none; }
+  .lcard:hover,.gcard:hover,.prow:hover{ box-shadow:var(--shadow), 0 0 0 1px var(--sep-strong); }
+  .icon-btn:hover,.chip:hover,.seg button:hover,.grip:hover{ background:var(--fill); }
+  .aname:hover,.pinfo:hover .pname{ color:var(--accent-text); }
+}
+
+/* ============ Hlavička ============ */
+.hdr{
+  position:sticky; top:0; z-index:30;
+  padding-top:env(safe-area-inset-top);
+  background:var(--hdr-bg);
+  -webkit-backdrop-filter:saturate(180%) blur(22px); backdrop-filter:saturate(180%) blur(22px);
+  border-bottom:.5px solid var(--sep);
+}
+.hdr-in{ max-width:1120px; margin:0 auto; padding:8px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left)); }
+.hdr-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+.brand{ display:flex; align-items:center; gap:10px; min-width:0; }
+.logo{ width:30px; height:30px; border-radius:9px; background:var(--accent); display:grid; place-items:center; flex:none; box-shadow:inset 0 -2px 4px rgba(0,0,0,.12); }
+h1{ font-size:17px; letter-spacing:-.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.seg,.mini-seg{ position:relative; display:grid; background:var(--fill); border-radius:10px; padding:2px; }
+.seg{ grid-template-columns:repeat(3,1fr); }
+.mini-seg{ grid-template-columns:repeat(2,1fr); flex:none; }
+.seg-i{
+  position:absolute; top:2px; bottom:2px; left:2px; border-radius:8px; background:var(--card);
+  box-shadow:0 1px 3px rgba(0,0,0,.14), 0 0 0 .5px rgba(0,0,0,.05);
+  transition:transform .42s cubic-bezier(.32,.72,0,1); pointer-events:none;
+}
+.seg .seg-i{ width:calc((100% - 4px)/3); transform:translateX(calc(var(--i,0) * 100%)); }
+.mini-seg .seg-i{ width:calc((100% - 4px)/2); transform:translateX(calc(var(--i,0) * 100%)); }
+.seg button,.mini-seg button{ position:relative; z-index:1; min-height:34px; padding:0 6px; border-radius:8px; white-space:nowrap; font-size:13px; font-weight:600; letter-spacing:-.01em; text-align:center; color:var(--text2); transition:color .2s; }
+.seg button[aria-selected="true"],.mini-seg button[aria-pressed="true"]{ color:var(--text); }
+.mini-seg button{ min-height:30px; padding:0 12px; font-size:13px; }
+
+/* ============ Rozvržení ============ */
+.wrap{ max-width:1120px; margin:0 auto; padding:14px max(16px,env(safe-area-inset-right)) calc(56px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
+.sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.card{ background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:16px; }
+.sub{ color:var(--text2); font-size:14px; }
+#v-knihovna,#v-plan{ margin-top:14px; }
+.stack{ display:flex; flex-direction:column; gap:12px; }
+h2.sec{ font-size:22px; letter-spacing:-.028em; margin:22px 2px 10px; }
+
+/* karty skupin */
+.groups{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.gcard{ position:relative; text-align:left; background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:12px 14px 13px; border:2px solid transparent; display:flex; flex-direction:column; gap:2px; min-width:0; }
+.gcard .gday{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text2); }
+.gcard .gtime{ font-size:19px; font-weight:700; letter-spacing:-.03em; }
+.gcard .gmeta{ font-size:13.5px; color:var(--text2); line-height:1.3; }
+.gcard[aria-checked="true"]{ border-color:var(--accent); background:linear-gradient(var(--accent-bg),var(--accent-bg)), var(--card); }
+.gcard[aria-checked="true"] .gday{ color:var(--accent-text); }
+.gcard .gcheck{ position:absolute; top:10px; right:10px; width:20px; height:20px; border-radius:50%; background:var(--accent); color:var(--on-accent); display:grid; place-items:center; transform:scale(0); transition:transform .4s cubic-bezier(.34,1.56,.64,1); }
+.gcard[aria-checked="true"] .gcheck{ transform:scale(1); }
+
+.next{ margin-top:10px; background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:12px 14px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.next .ni{ width:36px; height:36px; border-radius:10px; background:var(--accent-bg); color:var(--accent-text); display:grid; place-items:center; flex:none; }
+.next .nt{ flex:1 1 180px; min-width:0; }
+.next .nl{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text2); }
+.next .nv{ font-size:16px; font-weight:600; letter-spacing:-.015em; }
+.next .nw{ font-size:13.5px; color:var(--text2); }
+
+/* ============ Tlačítka, chipy, pilulky ============ */
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:40px; padding:0 16px; border-radius:12px; background:var(--fill); font-weight:600; font-size:15px; letter-spacing:-.012em; white-space:nowrap; }
+.btn.primary{ background:var(--accent); color:var(--on-accent); }
+.btn.sm{ min-height:34px; padding:0 12px; font-size:14px; border-radius:10px; }
+.btn.big{ min-height:50px; font-size:17px; border-radius:14px; width:100%; }
+.btn.tint{ background:var(--accent-bg); color:var(--accent-text); }
+.btn[disabled]{ opacity:.4; pointer-events:none; }
+.icon-btn{ position:relative; width:36px; height:36px; border-radius:50%; display:grid; place-items:center; color:var(--text2); flex:none; }
+.icon-btn::after{ content:""; position:absolute; inset:-4px; }
+.icon-btn.add{ background:var(--accent-bg); color:var(--accent-text); }
+.chips{ display:flex; gap:8px; overflow-x:auto; overscroll-behavior:contain; scrollbar-width:none; margin:0 calc(-1 * max(16px,env(safe-area-inset-right))) 0 calc(-1 * max(16px,env(safe-area-inset-left))); padding:2px max(16px,env(safe-area-inset-right)) 2px max(16px,env(safe-area-inset-left)); -webkit-overflow-scrolling:touch; }
+.chips::-webkit-scrollbar{ display:none; }
+.card .chips{ margin:0 -16px; padding:2px 16px; }
+.chip{ flex:none; min-height:34px; padding:0 14px; border-radius:999px; background:var(--card); box-shadow:var(--shadow); font-size:14px; font-weight:600; letter-spacing:-.01em; white-space:nowrap; }
+.card .chip{ background:var(--fill); box-shadow:none; }
+.chip[aria-pressed="true"]{ background:var(--accent); color:var(--on-accent); box-shadow:none; }
+.pill{ display:inline-flex; align-items:center; gap:6px; min-height:30px; padding:0 12px; border-radius:999px; font-size:14px; font-weight:700; letter-spacing:-.01em; background:var(--info-bg); color:var(--info); }
+.pill.ok{ background:var(--ok-bg); color:var(--ok); } .pill.warn{ background:var(--warn-bg); color:var(--warn); }
+.tag{ display:inline-flex; align-items:center; min-height:22px; padding:0 8px; border-radius:7px; background:var(--fill); color:var(--text2); font-size:12px; font-weight:600; letter-spacing:-.005em; white-space:nowrap; }
+.tag.t-warm{ background:var(--warm-bg); color:var(--warm); } .tag.t-drill{ background:var(--drill-bg); color:var(--drill); } .tag.t-game{ background:var(--game-bg); color:var(--game); }
+.tag.grp{ background:transparent; padding:0; color:var(--text2); }
+.tags{ display:flex; flex-wrap:wrap; gap:5px; min-width:0; }
+.switch-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:6px 0 2px; font-size:14.5px; }
+.switch{ position:relative; width:51px; height:31px; flex:none; }
+.switch input{ position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer; z-index:2; }
+.switch i{ position:absolute; inset:0; border-radius:999px; background:var(--sep-strong); transition:background .25s; }
+.switch i::after{ content:""; position:absolute; top:2px; left:2px; width:27px; height:27px; border-radius:50%; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,.3); transition:transform .38s cubic-bezier(.34,1.4,.64,1); }
+.switch input:checked + i{ background:var(--ok); }
+.switch input:checked + i::after{ transform:translateX(20px); }
+.switch input:focus-visible + i{ outline:2px solid var(--accent-text); outline-offset:2px; }
+
+/* ============ Trénink ============ */
+.train-grid{ display:flex; flex-direction:column; gap:12px; margin-top:14px; }
+.col-a,.col-b{ display:contents; }
+.col-a>.tl{ order:1; } .col-b>.picker{ order:2; } .col-b>.sumwrap{ order:3; } .col-a>.notes{ order:4; } .col-a>.savebox{ order:5; } .col-a>.savedbox{ order:6; }
+.tl-top{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
+.tl-actions{ display:flex; gap:8px; }
+.fixed{ display:flex; align-items:center; gap:12px; padding:10px 14px; margin-bottom:12px; background:var(--card); border-radius:var(--r-sm); box-shadow:var(--shadow); font-weight:600; letter-spacing:-.012em; }
+.fixed .ft{ font-variant-numeric:tabular-nums; color:var(--text2); font-size:14px; margin-left:auto; font-weight:500; }
+.fixed .dot{ width:10px; height:10px; border-radius:50%; background:var(--text2); opacity:.5; }
+.block{ background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:14px; margin-bottom:12px; border:2px solid transparent; transition:border-color .15s, background-color .15s; }
+.block.drop-on{ border-color:var(--accent); background:linear-gradient(var(--accent-bg),var(--accent-bg)), var(--card); }
+.bh{ display:flex; align-items:center; gap:10px; }
+.bh .dot{ width:12px; height:12px; border-radius:50%; flex:none; }
+.dot.warm{ background:var(--warm); } .dot.drill{ background:var(--drill); } .dot.game{ background:var(--game); }
+.bt{ flex:1; min-width:0; }
+.bt h3{ font-size:18px; letter-spacing:-.026em; }
+.bsub{ font-size:13.5px; color:var(--text2); font-variant-numeric:tabular-nums; }
+.fillrow{ display:flex; align-items:center; gap:10px; margin:10px 0 4px; }
+.fill{ flex:1; height:8px; border-radius:99px; background:var(--fill); overflow:hidden; }
+.fill>i{ display:block; height:100%; width:var(--p,0%); border-radius:99px; background:var(--info); transition:width .5s cubic-bezier(.32,.72,0,1), background-color .3s; }
+.fill.ok>i{ background:var(--ok); } .fill.over>i{ background:var(--warn); }
+.fill-t{ font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; min-width:68px; text-align:right; }
+.statusline{ display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:28px; margin-bottom:6px; font-size:13.5px; color:var(--text2); }
+.statusline .okt{ color:var(--ok); font-weight:600; display:inline-flex; align-items:center; gap:5px; }
+.list{ position:relative; display:flex; flex-direction:column; gap:6px; }
+.empty{ border:1.5px dashed var(--sep-strong); border-radius:var(--r-sm); padding:16px 12px; text-align:center; color:var(--text2); font-size:14px; }
+.arow{ display:grid; grid-template-columns:36px 1fr 36px; grid-template-areas:"grip name rm" ". meta meta"; align-items:center; column-gap:4px; row-gap:2px; padding:6px 8px 8px 4px; background:var(--card2); border-radius:var(--r-sm); }
+.arow .grip{ grid-area:grip; } .arow .aname{ grid-area:name; } .arow .rm{ grid-area:rm; } .arow .ameta{ grid-area:meta; }
+.arow.landed{ animation:landed .7s cubic-bezier(.32,.72,0,1); }
+@keyframes landed{ 0%{ background:var(--accent-bg); box-shadow:0 0 0 2px var(--accent); } 100%{ box-shadow:0 0 0 0 transparent; } }
+.grip{ width:36px; height:40px; display:grid; place-items:center; border-radius:10px; color:var(--text2); cursor:grab; position:relative; }
+.grip::after{ content:""; position:absolute; inset:-4px -2px; }
+.grip.pressed{ background:var(--fill); color:var(--text); }
+.aname{ font-weight:600; font-size:15.5px; letter-spacing:-.015em; line-height:1.25; padding:6px 4px; min-width:0; }
+.ameta{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:0 0 0 6px; }
+.stepper{ display:inline-flex; align-items:center; background:var(--card); border-radius:10px; box-shadow:0 0 0 .5px var(--sep-strong); flex:none; }
+.stepper button{ width:38px; height:34px; display:grid; place-items:center; border-radius:10px; font-size:20px; line-height:1; color:var(--text); }
+.stepper output{ min-width:50px; text-align:center; font-weight:700; font-size:14.5px; font-variant-numeric:tabular-nums; }
+.is-src{ opacity:.35; }
+.drop-line{ position:absolute; left:0; right:0; top:0; height:3px; border-radius:2px; background:var(--accent); pointer-events:none; z-index:2; transition:transform .14s cubic-bezier(.32,.72,0,1); }
+.ghost{ position:fixed !important; left:0; top:0; z-index:90; margin:0 !important; pointer-events:none; box-shadow:var(--shadow-lift); border-radius:14px; background:var(--card) !important; will-change:transform; }
+.ghost .stepper,.ghost .rm,.ghost .icon-btn.add{ opacity:.0; }
+body.is-dragging{ -webkit-user-select:none; user-select:none; cursor:grabbing; }
+body.is-dragging *{ cursor:grabbing !important; }
+
+.picker .ph{ margin-bottom:10px; }
+.picker h3{ font-size:18px; }
+.plist{ display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+.prow{ display:grid; grid-template-columns:36px 1fr 40px; align-items:center; column-gap:4px; padding:5px 6px 5px 4px; background:var(--card2); border-radius:var(--r-sm); }
+.pinfo{ text-align:left; padding:4px; min-width:0; display:flex; flex-direction:column; gap:4px; }
+.pname{ font-weight:600; font-size:15px; letter-spacing:-.015em; line-height:1.25; }
+.pmeta{ display:flex; align-items:center; flex-wrap:wrap; gap:5px; }
+.sumcard h3{ font-size:17px; margin-bottom:8px; }
+.sumcard + .sumcard{ margin-top:12px; }
+.gearlist{ display:flex; flex-direction:column; gap:6px; }
+.gear{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; font-size:15px; padding:4px 0; border-bottom:.5px solid var(--sep); }
+.gear:last-child{ border-bottom:0; }
+.gear span{ color:var(--text2); font-size:13.5px; text-align:right; }
+.hint{ font-size:14.5px; line-height:1.45; }
+.hint b{ font-weight:650; }
+.note-area,.name-in{ width:100%; border:0; border-radius:12px; background:var(--card2); padding:12px 14px; font-size:16px; line-height:1.4; letter-spacing:-.01em; resize:vertical; min-height:96px; }
+.name-in{ min-height:44px; resize:none; }
+.note-area::placeholder,.name-in::placeholder{ color:var(--text2); opacity:.8; }
+.rowf{ display:flex; gap:8px; }
+.rowf .name-in{ flex:1; min-width:0; }
+.saved{ display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+.srow{ display:flex; align-items:center; gap:8px; padding:8px 8px 8px 12px; background:var(--card2); border-radius:var(--r-sm); }
+.srow .st{ flex:1; min-width:0; }
+.srow .sn{ font-weight:600; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.srow .sm{ font-size:13px; color:var(--text2); }
+.card h3.ct{ font-size:17px; margin-bottom:8px; }
+
+/* ============ Knihovna ============ */
+.lib-top{ display:flex; flex-direction:column; gap:10px; }
+.lib-meta{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.lib-meta .switch-row{ padding:0; gap:10px; }
+.lgrid{ display:grid; grid-template-columns:1fr; gap:10px; margin-top:12px; }
+.lcard{ display:flex; flex-direction:column; gap:8px; text-align:left; background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:14px; min-width:0; }
+.lc-top{ display:flex; align-items:center; justify-content:space-between; }
+.lc-min{ font-size:13px; font-weight:700; color:var(--text2); font-variant-numeric:tabular-nums; }
+.lcard h3{ font-size:18px; letter-spacing:-.026em; }
+.lcard .fun{ font-size:14px; color:var(--text2); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.lc-foot{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:auto; padding-top:2px; font-size:12.5px; color:var(--text2); }
+.nores{ text-align:center; color:var(--text2); padding:32px 8px; }
+
+/* ============ Plán ============ */
+.plan-head h2{ font-size:24px; letter-spacing:-.03em; }
+.progress{ display:flex; align-items:center; gap:12px; margin-top:12px; }
+.progress .fill{ height:10px; } .progress .fill>i{ background:var(--accent); }
+.progress b{ font-variant-numeric:tabular-nums; font-size:14px; white-space:nowrap; }
+.phases{ display:flex; flex-direction:column; gap:12px; margin-top:14px; }
+.phase{ background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; }
+.phase>summary{ list-style:none; display:flex; align-items:center; gap:12px; padding:14px; cursor:pointer; }
+.phase>summary::-webkit-details-marker{ display:none; }
+.phase .pn{ width:34px; height:34px; border-radius:11px; background:var(--accent); color:var(--on-accent); display:grid; place-items:center; font-weight:800; font-size:16px; flex:none; }
+.phase .pt{ flex:1; min-width:0; } .phase .pt h3{ font-size:18px; letter-spacing:-.026em; }
+.phase .pt p{ font-size:13.5px; color:var(--text2); }
+.phase .chev{ color:var(--text2); transition:transform .35s cubic-bezier(.32,.72,0,1); }
+.phase[open] .chev{ transform:rotate(180deg); }
+.weeks{ display:grid; grid-template-columns:1fr; gap:10px; padding:0 12px 12px; }
+.week{ background:var(--card2); border-radius:var(--r-sm); padding:12px; display:flex; flex-direction:column; gap:10px; }
+.week.done{ background:linear-gradient(var(--ok-bg),var(--ok-bg)), var(--card2); }
+.wh{ display:flex; align-items:baseline; gap:8px; }
+.wh .wn{ font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-text); flex:none; }
+.wh h4{ font-size:16.5px; letter-spacing:-.022em; }
+.wlist{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+.wlist button{ display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:6px 4px; border-radius:8px; font-size:14.5px; letter-spacing:-.01em; }
+.wlist .tag{ min-width:84px; justify-content:center; }
+.goal{ font-size:14px; background:var(--card); border-radius:10px; padding:9px 11px; line-height:1.4; }
+.goal b{ color:var(--accent-text); font-weight:700; }
+.wa{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.done-toggle{ position:relative; display:inline-flex; align-items:center; gap:9px; min-height:40px; font-weight:600; font-size:14.5px; cursor:pointer; }
+.done-toggle input{ position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+.done-toggle .box{ width:26px; height:26px; border-radius:50%; border:2px solid var(--sep-strong); display:grid; place-items:center; color:#fff; transition:background-color .2s, border-color .2s; }
+.done-toggle .box svg{ transform:scale(0); transition:transform .4s cubic-bezier(.34,1.56,.64,1); }
+.done-toggle input:checked + .box{ background:var(--ok); border-color:var(--ok); } .done-toggle input:checked + .box svg{ transform:scale(1); }
+.done-toggle input:focus-visible + .box{ outline:2px solid var(--accent-text); outline-offset:2px; }
+.culture{ display:grid; grid-template-columns:1fr; gap:10px; }
+.ccard{ background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:16px; }
+.ccard .cn{ width:32px; height:32px; border-radius:10px; background:var(--accent-bg); color:var(--accent-text); display:grid; place-items:center; font-weight:800; margin-bottom:10px; }
+.ccard h3{ font-size:17.5px; margin-bottom:6px; }
+.ccard p{ font-size:14.5px; color:var(--text2); line-height:1.45; }
+
+/* ============ Bottom sheet ============ */
+.scrim{ position:fixed; inset:0; z-index:60; background:var(--scrim); opacity:0; touch-action:none; -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); }
+.sheet{
+  position:fixed; z-index:61; left:0; right:0; bottom:0; margin:0 auto; width:100%; max-width:660px;
+  max-height:min(90dvh, 880px); display:flex; flex-direction:column;
+  background:var(--card); border-radius:22px 22px 0 0; box-shadow:0 -10px 40px rgba(0,0,0,.25);
+  will-change:transform; outline:0;
+}
+.sheet::after{ content:""; position:absolute; top:100%; left:0; right:0; height:240px; background:var(--card); }  /* nikdy neodkryje mezeru při pružení */
+.sheet-head{ flex:none; padding:8px 8px 4px 20px; touch-action:none; cursor:grab; -webkit-user-select:none; user-select:none; }
+.grabber{ width:38px; height:5px; border-radius:3px; background:var(--sep-strong); margin:0 auto 8px; }
+.sheet-bar{ display:flex; align-items:flex-start; gap:10px; }
+.sheet-bar .tt{ flex:1; min-width:0; padding-top:2px; }
+.sheet-bar h2{ font-size:24px; letter-spacing:-.032em; }
+.sheet-bar .sub{ margin-top:2px; }
+.sheet-body{ flex:1; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; padding:4px 20px 12px; }
+.sheet-body h3{ font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--text2); margin:20px 0 8px; font-weight:700; }
+.sheet-body ol,.sheet-body ul{ margin:0; padding:0 0 0 22px; display:flex; flex-direction:column; gap:7px; }
+.sheet-body li{ padding-left:2px; line-height:1.45; }
+.sheet-body ol li::marker{ font-weight:700; color:var(--accent-text); }
+.meta{ display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 14px; }
+.fun{ background:var(--accent-bg); border-radius:var(--r-sm); padding:12px 14px; font-size:15px; line-height:1.45; }
+.fun b{ color:var(--accent-text); }
+.duo{ display:grid; grid-template-columns:1fr; gap:10px; margin-top:20px; }
+.mini{ border-radius:var(--r-sm); padding:12px 14px; font-size:14.5px; line-height:1.45; }
+.mini h4{ font-size:13px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; }
+.mini.ok{ background:var(--ok-bg); } .mini.ok h4{ color:var(--ok); }
+.mini.hard{ background:var(--warn-bg); } .mini.hard h4{ color:var(--warn); }
+.gchips{ display:flex; flex-wrap:wrap; gap:6px; }
+.gchips .tag{ min-height:28px; font-size:13.5px; padding:0 10px; }
+.sheet-foot{ flex:none; padding:10px 20px calc(12px + env(safe-area-inset-bottom)); border-top:.5px solid var(--sep); background:var(--card); }
+
+/* ============ Toast ============ */
+.toast{
+  position:fixed; z-index:95; left:50%; bottom:calc(16px + env(safe-area-inset-bottom)); transform:translate3d(-50%,0,0);
+  width:calc(100% - 32px); max-width:480px; display:flex; align-items:center; gap:12px; padding:8px 8px 8px 16px; min-height:48px;
+  border-radius:16px; background:rgba(44,44,46,.96); color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.35);
+  -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px); font-size:15px; font-weight:500; letter-spacing:-.01em;
+}
+.toast span{ flex:1; min-width:0; }
+.toast button{ min-height:36px; padding:0 14px; border-radius:10px; background:rgba(255,255,255,.16); color:#ff8f94; font-weight:700; }
+@media (prefers-color-scheme: dark){ .toast{ background:rgba(58,58,60,.97); } }
+@media (prefers-reduced-transparency: reduce){ .toast{ -webkit-backdrop-filter:none; backdrop-filter:none; background:#2c2c2e; } .scrim{ -webkit-backdrop-filter:none; backdrop-filter:none; } }
+
+/* ============ Široké obrazovky ============ */
+@media (min-width:700px){
+  .lgrid{ grid-template-columns:repeat(2,1fr); }
+  .weeks{ grid-template-columns:repeat(2,1fr); }
+  .culture{ grid-template-columns:repeat(2,1fr); }
+  .duo{ grid-template-columns:1fr 1fr; }
+}
+@media (min-width:980px){
+  .lgrid{ grid-template-columns:repeat(3,1fr); }
+  .culture{ grid-template-columns:repeat(4,1fr); }
+  .weeks{ grid-template-columns:repeat(2,1fr); }
+  .train-grid{ display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:18px; align-items:start; }
+  .col-a{ display:flex; flex-direction:column; gap:12px; min-width:0; }
+  .col-b{ display:flex; flex-direction:column; gap:12px; min-width:0; position:sticky; top:calc(var(--hdr-h) + 14px); max-height:calc(100dvh - var(--hdr-h) - 28px); overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; padding:2px; margin:-2px; }
+  .col-a>*,.col-b>*{ order:0 !important; }
+  .plist{ max-height:46dvh; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; }
+  .sumcard + .sumcard{ margin-top:12px; }
+  .groups{ max-width:640px; }
+}
+
+/* ============ Reduced motion ============ */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
+}
+</style>
+</head>
+<body>
+<header class="hdr" id="hdr">
+  <div class="hdr-in">
+    <div class="hdr-row">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9.5" fill="#fff"/><g fill="#c8141b"><circle cx="11" cy="5.2" r="1.15"/><circle cx="16" cy="8" r="1.15"/><circle cx="16" cy="14" r="1.15"/><circle cx="11" cy="16.8" r="1.15"/><circle cx="6" cy="14" r="1.15"/><circle cx="6" cy="8" r="1.15"/><circle cx="11" cy="11" r="1.15"/></g></svg>
+        </span>
+        <h1>Olymp Florbal Tréninky</h1>
+      </div>
+      <div class="mini-seg" id="miniSeg" role="group" aria-label="Skupina" style="--i:0">
+        <span class="seg-i" aria-hidden="true"></span>
+        <button type="button" class="tap" data-act="group" data-g="ut" aria-pressed="true">Út</button>
+        <button type="button" class="tap" data-act="group" data-g="pa" aria-pressed="false">Pá</button>
+      </div>
+    </div>
+    <div class="seg" id="tabs" role="tablist" aria-label="Sekce" style="--i:0">
+      <span class="seg-i" aria-hidden="true"></span>
+      <button type="button" class="tap" role="tab" id="tab-trenink" aria-controls="v-trenink" data-act="tab" data-t="trenink" aria-selected="true">Trénink</button>
+      <button type="button" class="tap" role="tab" id="tab-knihovna" aria-controls="v-knihovna" data-act="tab" data-t="knihovna" aria-selected="false">Knihovna</button>
+      <button type="button" class="tap" role="tab" id="tab-plan" aria-controls="v-plan" data-act="tab" data-t="plan" aria-selected="false">Plán 20 týdnů</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="app">
+  <section aria-label="Skupina">
+    <div class="groups" id="groups" role="radiogroup" aria-label="Tréninková skupina"></div>
+    <div class="next" id="next"></div>
+  </section>
+
+  <section id="v-trenink" role="tabpanel" aria-labelledby="tab-trenink">
+    <div class="train-grid">
+      <div class="col-a">
+        <div class="tl" id="tl"></div>
+        <section class="card notes">
+          <h3 class="ct"><label for="notes">Poznámky k tréninku</label></h3>
+          <textarea id="notes" class="note-area" rows="4" placeholder="Co se povedlo, co příště změnit, kdo chyběl…"></textarea>
+        </section>
+        <section class="card savebox">
+          <h3 class="ct"><label for="saveName">Uložit trénink</label></h3>
+          <div class="rowf">
+            <input id="saveName" class="name-in" type="text" maxlength="60" autocomplete="off" placeholder="Název, např. Střelba – 3. týden">
+            <button type="button" class="btn primary tap" data-act="save">Uložit</button>
+          </div>
+        </section>
+        <section class="card savedbox">
+          <h3 class="ct">Uložené tréninky</h3>
+          <div class="saved" id="saved"></div>
+        </section>
+      </div>
+      <div class="col-b">
+        <section class="card picker" id="picker"></section>
+        <div class="sumwrap" id="sum"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="v-knihovna" role="tabpanel" aria-labelledby="tab-knihovna" hidden>
+    <div class="lib-top" id="libTop"></div>
+    <div class="lgrid" id="lgrid"></div>
+  </section>
+
+  <section id="v-plan" role="tabpanel" aria-labelledby="tab-plan" hidden></section>
+</main>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" tabindex="-1" hidden>
+  <div class="sheet-head" id="sheetHead">
+    <div class="grabber" aria-hidden="true"></div>
+    <div class="sheet-bar">
+      <div class="tt"><h2 id="sheetTitle"></h2><p class="sub" id="sheetSub"></p></div>
+      <button type="button" class="icon-btn tap" data-act="sheet-close" aria-label="Zavřít">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 4l10 10M14 4L4 14"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="sheet-body" id="sheetBody"></div>
+  <div class="sheet-foot"><button type="button" class="btn primary big tap" id="sheetAdd" data-act="sheet-add">Přidat do tréninku</button></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+/* =====================================================================
+   DATA – knihovna aktivit, plán, týmová kultura
+   ===================================================================== */
+const SKILLS = {
+  vedeni:'Vedení míčku', prihravka:'Přihrávka', zpracovani:'Zpracování', strelba:'Střelba',
+  souboj:'1 na 1', precisleni:'Přečíslení', pohyb:'Pohyb bez míčku', cit:'Cit pro míček',
+  tym:'Týmovost', obratnost:'Obratnost', cista:'Čistá hra'
+};
+const GEAR = {
+  micky:{ n:'Míčky', stock:'máš 20 ks' },
+  rozl:{ n:'Rozlišováky', stock:'máš 10 ks' },
+  branky:{ n:'Branky', stock:'podle dostupnosti' },
+  mantinely:{ n:'Mantinely', stock:'jen když jsou' },
+  piskalka:{ n:'Píšťalka', stock:'' }
+};
+const TYPES = {
+  warm:{ n:'Rozcvička', pl:'Rozcvičky', block:'Rozcvička' },
+  drill:{ n:'Cvičení', pl:'Cvičení', block:'Cvičení' },
+  game:{ n:'Hra', pl:'Herní situace', block:'Zápas' }
+};
+const GRP_LABEL = { ut:'Út · 6.–9. třída', pa:'Pá · 1.–5. třída', both:'Obě skupiny' };
+
+/* gear: 'x?' = volitelné.  grp: ut | pa | both */
+const ACTS = [
+/* ---------------------------- ROZCVIČKY ---------------------------- */
+{ id:'w-honicka', type:'warm', name:'Honička o ocásky', min:7, skills:['obratnost','pohyb'], grp:'both', gear:['rozl'],
+  prep:'Vymez hřiště zhruba poloviny velikosti haly. Půlka dětí (nejvýš 10) si zastrčí rozlišovák za pas jako ocásek, druhá půlka honí. Všichni mají hůlku v jedné ruce, čepelí dolů.',
+  steps:[
+    'Lovci chytají ocásky. Kdo o ocásek přijde, odběhne k čáře, udělá 5 dřepů a vrací se do hry.',
+    'Po 90 sekundách se role vymění – ocásky si berou ti, kdo dosud honili.',
+    'Přidej pravidlo: kdo získá 3 ocásky, vyhrává kolo a vybere, jak se bude příští kolo honit (poskoky, vzad, po jedné noze).',
+    'Na závěr krátké protažení a pochvala pro děti, které nejčistěji uhýbaly.'
+  ],
+  tips:['Hůlka zůstává dole pod pasem – kdo ji zvedne nad pás, ztrácí ocásek. Učí to čistou hru od první minuty.','Chytá se jen za ocásek, nikdy za tělo ani dres. Hlídej srážky u okrajů.'],
+  easier:'Menší hřiště a méně lovců (stačí třetina dětí).',
+  harder:'Každý vede míček: kdo ztratí míček, ztrácí i ocásek.',
+  fun:'Je to klasická honička – zahřeje i ty nejstydlivější a nikdo u toho nestojí.' },
+
+{ id:'w-semafor', type:'warm', name:'Semafor', min:6, skills:['vedeni','cit','pohyb'], grp:'both', gear:['micky'],
+  prep:'Každý má míček (20 ks stačí pro všechny, jinak ve dvojicích) a volný prostor. Trenér stojí tak, aby ho všichni viděli.',
+  steps:[
+    'Zelená: děti vedou míček volně po celém prostoru a vyhýbají se ostatním.',
+    'Žlutá: zpomalí, míček drží těsně u čepele a mají hlavu nahoře.',
+    'Červená: zastaví míček hůlkou a zůstanou stát jako sochy. Poslední zastavený splní mini-úkol (5× přetažení míčku).',
+    'Modrá: otočka a vedení na opačnou stranu. Barvy střídej nepravidelně.'
+  ],
+  tips:['Hlavu nahoře! Kdo se dívá jen na míček, přehlédne barvu i spolužáka.','Střídej tempo a barvy nepředvídatelně, ať musí děti opravdu poslouchat.'],
+  easier:'Jen zelená a červená, míček se zatím pomalu kutálí.',
+  harder:'Zelená = vedení jen bekhendem, žlutá = vzad, modrá = přetahování míčku z forhendu na bekhend.',
+  fun:'Děti znají semafor z cesty do školy, takže pravidla chápou za pět vteřin – a soutěží, kdo zastaví poslední.' },
+
+{ id:'w-vlacek', type:'warm', name:'Vláček', min:6, skills:['vedeni','tym','obratnost'], grp:'pa', gear:['micky','rozl'],
+  prep:'Děti se rozdělí do vláčků po 4–5. Každé dítě má míček. Na zem polož několik rozlišováků jako „tunely“ a „nádraží“.',
+  steps:[
+    'První dítě je lokomotiva a vede vláček po hřišti. Ostatní za ní kopírují směr i tempo a vedou svůj míček.',
+    'Po 30 sekundách (nebo na pískání) se lokomotiva zařadí na konec a vedení přebírá další.',
+    'Vláčky projíždějí „tunelem“ – mezi dvěma rozlišováky na zemi – a vyhýbají se jiným vláčkům.',
+    'Na „nádraží“ všichni zastaví míček, otočí se a vláček vyjede opačným směrem. Poslední je nová lokomotiva.'
+  ],
+  tips:['Lokomotiva jede tak, aby ji všichni stihli – ne rychleji než nejpomalejší vagon.','Pochval lokomotivy, které se ohlížejí a čekají na ostatní. Učí se vést i následovat.'],
+  easier:'Bez míčků, jen chůze a běh s hůlkou v ruce.',
+  harder:'Lokomotiva mění tempo a směr a zadává úkoly (přetahování, vedení vzad).',
+  fun:'Každý se dostane k roli lokomotivy a mladší děti milují, že jsou součástí „vlaku“.' },
+
+{ id:'w-poklad', type:'warm', name:'Pirátský poklad', min:8, skills:['vedeni','tym','obratnost'], grp:'pa', gear:['micky','rozl'],
+  prep:'Do středu hřiště nasyp všechny míčky (poklad). Po stranách vyznač každé posádce (3–5 dětí) základnu – kruh nebo čtverec z rozlišováků.',
+  steps:[
+    'Na povel vyrazí piráti pro poklad. Každý smí odnést vždy jen jeden míček a vede ho hůlkou do základny své posádky. Míčky se nikdy nenosí v ruce.',
+    'Když je střed prázdný, smí se krást z cizích základen – jen hůlkou, bez kontaktu a bez bránění tělem.',
+    'Po dvou minutách trenér zapíská, posádky spočítají poklad a vítězná posádka vybere název pro příští kolo.',
+    'Posádky se promíchají a hra se zopakuje s novými spoluhráči.'
+  ],
+  tips:['Hůlka zůstává pod pasem a krade se jen z míčku, ne z dítěte.','Vyzvi posádky, ať si rozdělí role: kdo hlídá základnu, kdo vyráží.'],
+  easier:'Žádné krádeže – děti jen sbírají poklad do základny.',
+  harder:'Základny jsou dál od středu, nebo se míček odevzdává až po přihrávce spoluhráči.',
+  fun:'Pirátský příběh a poklad – děti hrají naplno a ani si neuvědomí, že trénují vedení míčku.' },
+
+{ id:'w-dyn', type:'warm', name:'Dynamická rozcvička ve dvojicích', min:8, skills:['obratnost','prihravka','tym'], grp:'ut', gear:['micky'],
+  prep:'Dvojice, na dvojici jeden míček (7 míčků pro 13 dětí). Vymez dráhu 15–20 m a dvojice rozestav vedle sebe s odstupem.',
+  steps:[
+    'Klus ve dvojicích vedle sebe po dráze tam a zpět. Mezi dvojicí jde míček forhendem a bekhendem po zemi.',
+    'Každých 10 m změna pohybu: výpady, skipy, boční přísuny, koleno k hrudi. Míček si děti přihrávají v pauzách.',
+    'Zpátky stejně, ale přidej běh pozadu a rotace trupu s hůlkou za zády.',
+    'Poslední kolo ve vyšším tempu: přihrávky za pohybu bez zastavení.'
+  ],
+  tips:['Hlídej kvalitu pohybu, ne rychlost: rovná záda, stabilní kolena, měkký došlap.','Nechej dvojice počítat nahlas – drží rytmus a zvyká se na komunikaci.'],
+  easier:'Bez míčku, jen pohybové cviky a klus.',
+  harder:'Přihrávky za pohybu na jeden dotyk, střídání stran po každých 5 m.',
+  fun:'Dospívající ocení smysluplnou rozcvičku s míčkem, ne nudné běhání dokola.' },
+
+{ id:'w-draha', type:'warm', name:'Koordinační dráha z rozlišováků', min:8, skills:['obratnost','pohyb','cit'], grp:'both', gear:['rozl','micky?'],
+  prep:'Z rozlišováků polož na zem 2–3 stejné dráhy: „žebřík“ (rozlišováky těsně za sebou), slalom (značky po 1,5 m) a „ostrůvky“ (rozlišováky s mezerou na skok). Dráhy zapoj do oběhu – po poslední překážce se vrací kolem a zase nastupuje.',
+  steps:[
+    'Děti nastupují po jednom v odstupu asi 3 sekundy. Žebřík: jedna noha do každého pole. Slalom: kličky mezi značkami. Ostrůvky: skoky snožmo.',
+    'Druhé kolo: boční přeskoky a běh vzad. Zpět se vrací klusem kolem dráhy.',
+    'Třetí kolo s míčkem a hůlkou: míček vedeme žebříkem i slalomem.',
+    'Čtvrté kolo ve dvojicích – druhý kopíruje první (zrcadlo).'
+  ],
+  tips:['Důraz na kvalitní došlap a vzpřímené držení těla. Chyby netrestej, jen oprav.','Dráhy stav jako okruh, aby nevznikla fronta.'],
+  easier:'Chůze, jen žebřík a slalom, bez míčku.',
+  harder:'Všechno s míčkem v tempu, slalom pozadu, zrychlení na čas.',
+  fun:'Vypadá to jako ninja trénink – každé kolo jde zrychlit a děti se samy snaží zlepšit.' },
+
+/* ---------------------------- CVIČENÍ ---------------------------- */
+{ id:'d-labyrint', type:'drill', name:'Labyrint', min:8, skills:['vedeni','pohyb'], grp:'pa', gear:['micky','rozl'],
+  prep:'Po hřišti nepravidelně rozlož 10 rozlišováků jako „zdi labyrintu“ (ležící na zemi). Každé dítě má svůj míček.',
+  steps:[
+    'Všichni vedou míček mezi značkami a obkružují je. Na značku se nešlape a nenarazí se do spolužáka.',
+    '30 sekund: kolik různých značek obkroužíš? Každý si počítá nahlas sám pro sebe.',
+    'Labyrint se změní – trenér nebo kapitán přesune 3–4 značky a děti hledají nové cesty.',
+    'Závěrečné kolo: vedeme jen forhendem a pak jen bekhendem.'
+  ],
+  tips:['Hlava nahoře. Kdo se dívá jen na míček, naráží do ostatních.','Míček drž blízko čepele: krátké a časté doteky.'],
+  easier:'Větší odstupy mezi značkami, míček se vede pomalu, bez počítání.',
+  harder:'Vedení jen bekhendem a na čas, každé kolo o 5 sekund kratší.',
+  fun:'Každé dítě má svůj míček a pořád se něco děje – nikdo nečeká ve frontě.' },
+
+{ id:'d-metronom', type:'drill', name:'Metronom (přetahování míčku)', min:8, skills:['vedeni','cit'], grp:'ut', gear:['micky'],
+  prep:'Každý má míček a volné místo kolem sebe. Trenér udává rytmus tleskáním, hlasem nebo hudbou.',
+  steps:[
+    'Stoj rozkročný, míček před tělem. Přetahuj míček úzkými doteky z forhendu na bekhend v rytmu trenéra (pomalu → středně → rychle).',
+    'Totéž v pomalé chůzi vpřed, pak vzad. Hlavu držíme nahoře.',
+    'Ve dvojicích: jeden určuje rytmus, druhý ho zrcadlí. Po 30 sekundách role výměna.',
+    'Výzva: 20 přetažení za sebou bez ztráty míčku. Kdo to zvládne, zvýší rytmus.'
+  ],
+  tips:['Uvolněný stisk hůlky, horní ruka vede, dolní ruka jen jemně dirigeje. Čepel míček „hladí“.','Dívej se na trenéra nebo před sebe, ne na míček – cit se trénuje bez očí.'],
+  easier:'Pomalý rytmus, míček se zastaví po každém přetažení.',
+  harder:'Zrychli rytmus, přidej pohyb po okruhu se změnami směru a chůzi vzad.',
+  fun:'Rytmus a hudba z toho dělají malou výzvu, kterou si děti rády mezi sebou porovnávají.' },
+
+{ id:'d-branky', type:'drill', name:'Přihrávkové brány', min:8, skills:['prihravka','zpracovani'], grp:'both', gear:['micky','rozl'],
+  prep:'Dvojice, jeden míček na dvojici. Mezi partnery (4–6 m) vytvoř bránu ze dvou rozlišováků široké asi 1 m. Brány rozmísti po hřišti.',
+  steps:[
+    'Dvojice si přihrávají mezi sebou skrz bránu po zemi – nejdřív forhendem, pak bekhendem.',
+    'Soutěž: 5 přesných přihrávek v řadě skrz bránu = bod. Počítá se nahlas.',
+    'Po každé přihrávce se přihrávající krok pohne do strany (otevře se), aby byl připraven na vrácený míček.',
+    'Zúžíme bránu nebo přidáme vzdálenost. Zkus „zpracuj – přihraj“ ve dvou dotycích.'
+  ],
+  tips:['Čepel míří na adresáta, hůlka doprovází míček. Pohyb jde ze trupu, ne jen z rukou.','Před přihrávkou zavolej jméno spoluhráče – trénujeme komunikaci.'],
+  easier:'Širší brána (2 m), kratší vzdálenost, pomalejší míček.',
+  harder:'Přihrávka na jeden dotyk, užší brána, po přihrávce se přesuneš do vedlejší brány.',
+  fun:'Malé body a rekordy ve dvojici – děti se samy hecují k přesnosti.' },
+
+{ id:'d-trojuhelnik', type:'drill', name:'Přihrávkový trojúhelník', min:8, skills:['prihravka','pohyb'], grp:'ut', gear:['micky','rozl'],
+  prep:'Trojice, jeden míček. Rozlišováky vytvoří trojúhelník o straně 5–6 m. Zbývající dítě se přidá do čtyřúhelníku.',
+  steps:[
+    'Přihraj spoluhráči po pravé straně a okamžitě běž na jeho místo. Příjemce zpracuje a hraje dál.',
+    'Míček i hráči plynule kolují po trojúhelníku. Po 60 sekundách se změní směr oběhu.',
+    'Zrychli: přihrávky na jeden dotyk, vždy hlasitě zavolej jméno.',
+    'Zkus nahodilý výběr: po přihrávce můžeš jít za kterýmkoli rohem, ale nikdy nestůj.'
+  ],
+  tips:['Přihrávej před běžícího spoluhráče, ne pod nohy – míček musí „najít“ cestu k němu.','Oční kontakt a hlas před přihrávkou. Kdo neví, kdo mu přihraje, se zastaví.'],
+  easier:'Menší trojúhelník, pomalejší míček, hráči zatím stojí na místě.',
+  harder:'Jeden dotyk, střídání směrů a druhý míček v opačném směru.',
+  fun:'Míček cestuje stále dál a děti cítí, že jim to jako týmu „teče“.' },
+
+{ id:'d-ruce', type:'drill', name:'Měkké ruce (zpracování)', min:7, skills:['zpracovani','cit'], grp:'both', gear:['micky','mantinely?'],
+  prep:'Dvojice, jeden míček, vzdálenost 4–5 m. Pokud jsou mantinely, lze využít odrazy od mantinelu.',
+  steps:[
+    'Jeden přihrává po zemi pomalu. Přijímající drží čepel naplocho a při dopadu míčku s ní „couvne“ – jako když chytáš vejce.',
+    'Zrychli přihrávky. Míček zpracuj do strany a hned se s ním rozjeď.',
+    'Mini-soutěž: kolik přihrávek za minutu zpracuje dvojice čistě, bez odrazu pryč?',
+    'Případně hrajeme přes mantinel: odraz, zpracuj, pokračuj.'
+  ],
+  tips:['Hůlka ustupuje spolu s míčkem. Tvrdá čepel míček odrazí pryč.','Zpracuj míček tam, kam chceš pokračovat – nejen ho zastav.'],
+  easier:'Pomalý míček, menší vzdálenost, přihrávající volá „teď!“.',
+  harder:'Rychlejší přihrávky, zpracování pod tlakem druhého hráče, po zpracování rovnou střela.',
+  fun:'Zpracovat míček „jako vejce“ je malý trik, který děti chtějí zvládnout.' },
+
+{ id:'d-terce', type:'drill', name:'Střelba na terče', min:8, skills:['strelba'], grp:'pa', gear:['micky','rozl','branky?'],
+  prep:'Do rohů branky zavěs rozlišováky jako terče (nebo je polož na zem před zeď). Každá skupina po 5 dětech má svou branku a vlastní míčky. Bez brankáře.',
+  steps:[
+    'Děti stojí v řadě na čáře 4–5 m od branky, každý má svůj míček. Na povel střílí všichni naráz.',
+    'Po zapískání všichni sbírají své míčky a vracejí se. Nikdo neběží pro míček dřív, než trenér povolí.',
+    'Body: trefený terč 3 body, branka 1 bod. Každý si počítá svůj rekord.',
+    'Změň vzdálenost a úhel, střílíme zleva i zprava.'
+  ],
+  tips:['Špička hůlky míří za míčkem k cíli; oči jdou do rohu branky, ne na míček.','Bezpečnost: střílí se jen na povel, nikdo nestojí před brankou ani za ní.'],
+  easier:'Blíž k brance, platí celá branka bez terčů.',
+  harder:'Střelba z vedení míčku, menší terče, tvrdší střela.',
+  fun:'Trefit terč je malá výzva a každé dítě si honí vlastní rekord.' },
+
+{ id:'d-strelba', type:'drill', name:'Střelba po přihrávce', min:9, skills:['strelba','prihravka','pohyb'], grp:'both', gear:['micky','branky?','rozl'],
+  prep:'Skupiny po 4–5 dětech u každé branky (nebo na zeď s terči z rozlišováků). Role: přihrávající, střelec a sběrač míčků. Bez brankáře.',
+  steps:[
+    'Přihrávající stojí v rohu s míčky. Střelec naběhne do střelecké pozice a přihrávka ho najde před sebou.',
+    'Střelec míček zpracuje a vystřelí do rohu branky. Pak se role točí: přihrávající → střelec → sběrač → přihrávající.',
+    'Přidej pohyb: střelec nabíhá z boku a střílí na první dotyk.',
+    'Bodování přesnosti: za roh branky 2 body, za střed 1 bod. Tým sčítá společné skóre.'
+  ],
+  tips:['Přihrávka jde před běžícího střelce, ne pod nohy.','Střelec se dívá na branku už při zpracování – hlava je nahoře.'],
+  easier:'Střelec míček nejdřív zastaví, pak střílí, bez nabíhání.',
+  harder:'Střela na jeden dotyk, za zády střelce běží „stín“ obránce bez kontaktu.',
+  fun:'Přihrávka a gól – jedna z nejlepších věcí na florbalu, a tady ji zažije každý hned několikrát.' },
+
+{ id:'d-poklad', type:'drill', name:'Hlídač pokladu (1 na 1)', min:8, skills:['souboj','vedeni'], grp:'pa', gear:['micky','rozl'],
+  prep:'Čtverec 6 × 6 m, uprostřed rozlišovák – poklad. Dvojice: hlídač (bez míčku) a lupič (s míčkem). Vyznač více čtverců, aby hrálo víc dvojic současně.',
+  steps:[
+    'Lupič vede míček a snaží se dotknout pokladu míčkem. Hlídač stojí mezi ním a pokladem.',
+    'Hlídač smí míček získat jen hůlkou zespodu, bez držení a bez kontaktu.',
+    'Po 40 sekundách se role vymění. Dotek pokladu míčkem = bod pro lupiče.',
+    'Vítěz dvojice jde o čtverec dál, poražený zůstává – ať se dvojice míchají.'
+  ],
+  tips:['Hlídač: nohy na šířku ramen, pokrčená kolena, hůlka dole, těžiště nízko.','Lupič: změna rychlosti a směru je silnější než samotné kličkování.'],
+  easier:'Hlídač hlídá jen postavením a pomalu, bez odebírání míčku.',
+  harder:'2 lupiči proti 1 hlídači nebo menší čtverec.',
+  fun:'Každý je střídavě lupič i hlídač. Souboj je krátký a děti se chtějí hned vrátit.' },
+
+{ id:'d-obrana', type:'drill', name:'Obrana 1 na 1', min:9, skills:['souboj','pohyb'], grp:'ut', gear:['micky','rozl'],
+  prep:'Pás 4 × 10 m, na obou koncích malá branka z rozlišováků. Dvojice: útočník s míčkem a obránce. Více pásů vedle sebe.',
+  steps:[
+    'Útočník vede míček od jedné branky k druhé. Obránce couvá, nastaví postoj bokem a tlačí ho ke straně.',
+    'Odebrání míčku jen hůlkou zespodu na míček, nikdy po hůlce nebo těle.',
+    'Po každém pokusu se role vymění. Útočník dostane bod za projetí, obránce za čisté odebrání.',
+    'Faul = bod soupeři. Kdo vyhraje, jde na vedlejší pás.'
+  ],
+  tips:['Nehoď se po míčku – drž odstup na hůlku a čekej na chybu.','Žádné držení hůlky ani kontakt; za nečistý souboj je bod soupeři.'],
+  easier:'Obránce jen couvá a zpomaluje, bez odebírání míčku.',
+  harder:'Časový limit 5 sekund pro útočníka, nebo 2 na 2.',
+  fun:'Souboj o body s kamarádem a jasná pravidla – teenageři milují, když je vidět, kdo vyhrál čistě.' },
+
+{ id:'d-2na1', type:'drill', name:'2 na 1', min:9, skills:['precisleni','prihravka','pohyb'], grp:'both', gear:['micky','branky?','rozl'],
+  prep:'Hřiště rozděl na pruhy. V každém pruhu malá branka (nebo dva rozlišováky) a trojice dětí: 2 útočníci a 1 obránce. Bez brankáře.',
+  steps:[
+    'Dva útočníci startují od půlky, obránce proti nim. Útočníci hrají přihrávkou a hledají volné místo.',
+    'Přihrávka se pustí ve chvíli, kdy obránce „vybere“ jednoho útočníka.',
+    'Po pokusu se role točí: obránce → útočník, útočníci zpět do řady. Žádné čekání.',
+    'Body za přihrávku, která obránce přehrála, a za gól.'
+  ],
+  tips:['Útočník bez míčku se nabídne šikmo, ne přímo za obránce.','Přihrávej ve chvíli, kdy tě obránce „vybere“. Přihrávka nesmí přijít pozdě.'],
+  easier:'Obránce jen chodí nebo jen stojí na čáře.',
+  harder:'Plný souboj obránce a limit 6 sekund na dokončení.',
+  fun:'Útočníci mají vždy o jednoho víc, takže děti cítí, že když si přihrají, mohou skórovat.' },
+
+{ id:'d-3na2', type:'drill', name:'3 na 2', min:10, skills:['precisleni','prihravka','pohyb'], grp:'both', gear:['micky','branky?','rozl'],
+  prep:'Pruh s brankou (nebo malou brankou z rozlišováků). Trojice útočníků proti dvěma obráncům. Ostatní čekají za čárou a dvojice rychle střídají.',
+  steps:[
+    'Tři útočníci vedou útok do šířky. Dva obránci staví blok a čekají.',
+    'Hráč s míčkem „poutá“ obránce a přihrává volnému spoluhráči.',
+    'Po skončení akce (gól nebo ztráta) odchází obránci a přicházejí noví. Útočníci se otočí.',
+    'Vyhodnoť: kolik přečíslení skončilo střelou?'
+  ],
+  tips:['Krajní hráči zůstávají široko u lajny, aby roztáhli obranu.','Držitel míčku postupuje až k obráncům – teprve pak přihrává.'],
+  easier:'Zahraj 2 na 1 dvakrát po sobě, obránci jen chodí.',
+  harder:'Po zisku míčku obránci okamžitě vyrážejí do protiútoku na druhou branku.',
+  fun:'Víc útočníků znamená víc akcí a gólů, takže děti vyhrávají víc než prohrávají.' },
+
+{ id:'d-rondo', type:'drill', name:'Rondo 4 na 1', min:8, skills:['prihravka','zpracovani','pohyb'], grp:'ut', gear:['micky','rozl'],
+  prep:'Čtverec 6 × 6 m z rozlišováků. 4 děti na hranách, 1 uprostřed. 20 dětí = 4 ronda 4 na 1; 13 dětí = jedno rondo 4 na 1 a dvě ronda 3 na 1.',
+  steps:[
+    'Čtyři hráči si přihrávají po zemi, střední se snaží míček zachytit hůlkou.',
+    'Kdo udělá chybu (přihrávku vyhodí nebo ji střední zachytí), jde doprostřed.',
+    'Počítáme, kolik přihrávek za sebou tým zvládne. Rekord se zapisuje.',
+    'Po dvou minutách zmenši čtverec nebo přidej druhého středního.'
+  ],
+  tips:['Hráč s míčkem má vždy dvě možnosti přihrávky – nastav tělo tak, abys je viděl.','Střední nejde do kontaktu; chce míček, ne souboj. Hůlka zůstává dole.'],
+  easier:'Větší čtverec nebo 5 na 1, bez omezení doteků.',
+  harder:'Menší čtverec, přihrávky na jeden dotyk, 4 na 2.',
+  fun:'Míček koluje a děti slyší, jak jim „fungují“ přihrávky. Rekordy motivují.' },
+
+{ id:'d-cit', type:'drill', name:'Cit pro míček', min:7, skills:['cit','vedeni','zpracovani'], grp:'pa', gear:['micky','rozl?'],
+  prep:'Každé dítě má míček a vlastní prostor. Několik rozlišováků po hřišti slouží jako značky pro osmičky.',
+  steps:[
+    '„Šneček“: veď míček co nejpomaleji – vyhraje ten, kdo dojede poslední (a míček nezastaví).',
+    '„Osmičky“: veď míček v osmičce kolem dvou značek, nejdřív pomalu, pak rychleji.',
+    '„Pohlazení“: jemné doteky míčku jen vnitřní stranou čepele, uvolněné ruce.',
+    '„Zastav na povel“: na trenérovo „hop“ zastav míček hůlkou a stůj jako socha.'
+  ],
+  tips:['Uvolněný stisk hůlky: horní ruka vede, dolní ruka jen jemně řídí.','Zkoušejte i bekhend. Kdo se nebojí chyby, učí se rychleji.'],
+  easier:'Míček stojí, jen kroužíme čepelí kolem něj, větší prostor.',
+  harder:'Osmičky mezi nohama, počítáme nahlas a nedíváme se na míček.',
+  fun:'Zábavné miniúkoly: děti objeví, že nejpomalejší vedení míčku je vlastně nejtěžší.' },
+
+{ id:'d-pohyb', type:'drill', name:'Pohyb bez míčku', min:9, skills:['pohyb','prihravka','tym'], grp:'both', gear:['micky','rozl'],
+  prep:'Čtverec 10 × 10 m, týmy po 4 s jedním míčkem. 13 dětí = 3 čtverce (4+4+5), 20 dětí = 5 čtverců.',
+  steps:[
+    'Čtyři hráči si přihrávají míček a po každé přihrávce přihrávající musí změnit místo. Kdo stojí, ztrácí bod.',
+    'Přidej pasivního obránce (jen „stín“ bez zásahů). Tým hledá „trojúhelník“ – vždy dvě možnosti přihrávky.',
+    'Aktivní obránce, hra na dva doteky. Obránce se po ztrátě míčku vystřídá s hráčem, který chybil.',
+    'Soutěž: kolik přihrávek v řadě tým zvládne za 90 sekund?'
+  ],
+  tips:['Hlasem i očima: zavolej si o míček. Kdo se nenabídne, nedostane ho.','Pohyb je vždy dřív než přihrávka – nabídni se, ještě než ti míček přijde.'],
+  easier:'Bez obránce, jen přihrávky a pohyb, větší prostor.',
+  harder:'Aktivní obránce a max. 2 doteky, menší čtverec.',
+  fun:'Děti zjistí, že většina hry se odehrává bez míčku – a že dobrý pohyb je vidět.' },
+
+{ id:'d-stafeta', type:'drill', name:'Týmová štafeta', min:8, skills:['tym','vedeni','prihravka'], grp:'pa', gear:['micky','rozl'],
+  prep:'Týmy po 4–5 dětech, každý tým má dráhu s rozlišováky (10 m, slalom) a míček. Čekající děti mají vlastní míček na mini-úkol.',
+  steps:[
+    'První hráč vede míček slalomem a po návratu přihraje dalšímu v řadě. Pak se řadí na konec.',
+    'Čekající děti plní mini-úkol s vlastním míčkem (přetahování, osmičky) – žádné stání.',
+    'Každý tým absolvuje dráhu dvakrát. Dotek značky = +2 sekundy. Vyhrává tým, který skončí první čistě.',
+    'Závěrečné společné kolo: celý tým vede míčky v řadě za sebou a nahlas počítá.'
+  ],
+  tips:['Hodnoť i povzbuzování: tým, který nejhlasitěji fandí, dostane bonusový bod.','Týmy rozděl tak, aby byly vyrovnané – ať souboj dává smysl.'],
+  easier:'Kratší dráha, bez slalomu.',
+  harder:'Dráha s přihrávkou pro každého, střela na terč jako bonus.',
+  fun:'Děti hrají za tým a fandí si – ideální na budování týmové kultury.' },
+
+/* ---------------------------- HERNÍ SITUACE ---------------------------- */
+{ id:'g-male', type:'game', name:'Malé branky 3 na 3', min:12, skills:['tym','prihravka','precisleni'], grp:'both', gear:['micky','rozl','branky?'],
+  prep:'Hřiště rozděl na malá hřiště cca 10 × 15 m. Malé branky z rozlišováků nebo plochých branek. 20 dětí = 3 hřiště 3 na 3 a 2 rozhodčí/střídání; 13 dětí = 2 hřiště 3 na 3 a 1 rozhodčí. Bez brankářů.',
+  steps:[
+    'Hraje se 3 na 3 na dvě malé branky. Gól platí, jen když míček přejde po zemi.',
+    'Po gólu soupeř zahajuje od vlastní branky. Nepřetržitá hra, žádné dlouhé přestávky.',
+    'Každé 3 minuty rotace: vítězové o hřiště dál, poražení doleva – každé dítě hraje s různými spoluhráči.',
+    'Připomeň pravidlo čisté hry: hůlka dole, žádný kontakt, žádné držení.'
+  ],
+  tips:['Hodně doteků míčku: malý prostor a málo hráčů znamená, že každý je pořád ve hře.','Chval čistou hru nahlas, ať ostatní slyší, co je ocení.'],
+  easier:'Větší branky, menší hřiště, povinný dotyk od každého hráče.',
+  harder:'Povinné 2 přihrávky před střelou, užší branky.',
+  fun:'Každý je pořád ve hře a gól padá často – děti slaví a chtějí hrát znovu.' },
+
+{ id:'g-ctyri', type:'game', name:'Čtyři branky', min:12, skills:['pohyb','tym','precisleni'], grp:'pa', gear:['micky','rozl','branky?'],
+  prep:'Hřiště rozděl, do rohů postav 4 malé branky (rozlišováky). Týmy 4 na 4 nebo 5 na 5, každý tým brání 2 branky a útočí na 2 soupeřovy.',
+  steps:[
+    'Hraje se na čtyři branky: tým brání dvě a útočí na dvě. Gól do kterékoli soupeřovy branky.',
+    'Po gólu zahajuje soupeř od branky, kde gól padl.',
+    'Pravidlo „přehoď hru“: nesmíš střílet do stejné branky dvakrát za sebou.',
+    'Po 4 minutách střídání týmů nebo hřišť.'
+  ],
+  tips:['Vyzvi děti, ať hledají volnou branku – hlava nahoře a rozhlédnutí.','Hra učí rozmístění do šířky a změnu směru útoku.'],
+  easier:'Větší branky nebo 3 na 3.',
+  harder:'Povinné 2 přihrávky před každou střelou, střela jen na jeden dotyk.',
+  fun:'Žádné davové hromady kolem jedné branky – děti mají vždy prostor a volnou cestu ke gólu.' },
+
+{ id:'g-povinna', type:'game', name:'Povinná přihrávka', min:12, skills:['prihravka','tym'], grp:'ut', gear:['micky','rozl','branky?'],
+  prep:'Hřiště 3 na 3 nebo 5 na 5 podle počtu dětí, branky nebo malé branky. Trenér rozhoduje, kolik přihrávek je povinných.',
+  steps:[
+    'Gól platí jen tehdy, když před střelou tým zahrál alespoň 3 přihrávky v řadě.',
+    'Přihrávky počítá nahlas celý tým. Když soupeř míček získá, počítá se od nuly.',
+    'Po 4 minutách zvýšíme na 4 přihrávky nebo „každý se dotkne míčku“.',
+    'Tým, který se nejlépe domluví, dostane bonusový bod.'
+  ],
+  tips:['Kdo drží míček příliš dlouho, rozpoznáš podle volání spoluhráčů – chval, když přihrají včas.','Hlídej, aby přihrávky nebyly jen „na povel“: chval ty, které míří před spoluhráče a mají smysl.'],
+  easier:'Stačí 2 přihrávky nebo jakákoli přihrávka mezi dvěma hráči.',
+  harder:'Každý hráč týmu se musí před střelou dotknout míčku.',
+  fun:'Místo osamělých sól se hra mění v týmovou kombinaci a gól jde slavit společně.' },
+
+{ id:'g-dvojity', type:'game', name:'Dvojitý gól', min:10, skills:['strelba','tym'], grp:'pa', gear:['micky','rozl','branky?'],
+  prep:'Malé hřiště, týmy 3 na 3 nebo 4 na 4, branky nebo malé branky. Tabule nebo kartičky na počítání bodů.',
+  steps:[
+    'Gól se počítá dvojnásobně, pokud před střelou přihrál alespoň jeden spoluhráč („asistence“).',
+    'Gól bez přihrávky platí jen za 1 bod.',
+    'Po každém gólu střelec poděkuje tomu, kdo přihrál.',
+    'Po 3 minutách se hřiště a týmy promíchají.'
+  ],
+  tips:['Stav bodů říkej nahlas – děti hned vidí, že přihrávka se vyplácí.','Chval i toho, kdo přihrál na gól, nejen střelce.'],
+  easier:'Dvojnásobný gól platí po jakékoli přihrávce, i krátké o dva metry.',
+  harder:'Dvojnásobný gól jen po dvou přihrávkách od různých hráčů.',
+  fun:'Přihrávka se vyplatí a děti si začnou samy hledat spoluhráče.' },
+
+{ id:'g-joker', type:'game', name:'Joker', min:12, skills:['precisleni','tym','pohyb'], grp:'both', gear:['micky','rozl','branky?'],
+  prep:'Dva týmy 4 na 4 (nebo 3 na 3) a navíc jeden hráč – joker, který nosí odlišný rozlišovák. Joker hraje vždy za tým, který má míček.',
+  steps:[
+    'Hraje se 4 na 4 + joker. Joker míček nevede ani na něj nestřílí, jen ho přihrává tomu týmu, který ho právě má.',
+    'Tým s míčkem má tedy trvalou přesilu o jednoho hráče.',
+    'Joker se mění každé 2 minuty, aby se vystřídali všichni.',
+    'Po minutě hry se zeptej: kdy se přesila nejlépe využije?'
+  ],
+  tips:['Učíš přesilovou hru: přihrávat dřív, než se obrana zorientuje.','Joker nesmí střílet, jen přihrávat – jinak nevznikne hra, ale sólo.'],
+  easier:'Joker smí i střílet a vést míček.',
+  harder:'Joker smí míček zahrát jen jednou za akci a musí hrát na jeden dotyk.',
+  fun:'Joker je pro každého speciální role a děti si ji rády vyzkouší.' },
+
+{ id:'g-tri', type:'game', name:'Tři doteky', min:10, skills:['zpracovani','prihravka','cit'], grp:'ut', gear:['micky','rozl','branky?'],
+  prep:'Hřiště 4 na 4 nebo 5 na 5, branky nebo malé branky. Dotyky počítá celý tým, rozhodčí nad nimi dohlíží.',
+  steps:[
+    'Hráč smí s míčkem udělat maximálně tři doteky (zpracování, vedení, přihrávka).',
+    'Při čtvrtém doteku míček přebírá soupeř.',
+    'Po 3 minutách zkrať na 2 doteky, po dalších na 1 (rovnou hraj).',
+    'Vyhodnoť: co se změnilo? Rychlejší hra? Víc přihrávek?'
+  ],
+  tips:['Nenech děti zpomalovat hru mrtvými přihrávkami – chval rychlost rozhodnutí.','Každé zpracování musí být „měkké“, jinak se dotek zbytečně zahodí.'],
+  easier:'Čtyři doteky, v malém prostoru.',
+  harder:'Dva doteky a při střele jen jeden.',
+  fun:'Omezení dotyků zrychlí hru a děti si samy všimnou, že se hraje líp.' },
+
+{ id:'g-presila', type:'game', name:'Přesilovka', min:10, skills:['precisleni','tym'], grp:'ut', gear:['micky','rozl','branky?'],
+  prep:'Dvě hřiště: na jednom 4 na 3 (přesilovka), na druhém 3 na 3. Po 3 minutách se hřiště vymění. Střídání po každé akci.',
+  steps:[
+    'Přesilový tým (4) má 60 sekund na dosažení gólu. Obránci (3) brání a snaží se míček získat.',
+    'Když obránci míček získají, můžou ho okamžitě zahrát na malou branku.',
+    'Po akci se týmy otočí. Trenér počítá, kolik gólů vzniklo z přesilovky.',
+    'Rozbor: co funguje v přesilovce? Pohyb? Šířka? Rychlost přihrávek?'
+  ],
+  tips:['Přesilový tým musí využít šířku – hráči u lajny, držitel míčku zatahuje obránce.','Obránci nepanikaří: postavení bokem a zavřený střed.'],
+  easier:'Přesilovka 4 na 2 a obránci jen pasivně stojí.',
+  harder:'Přesilový tým má na gól jen 30 sekund.',
+  fun:'Střídání rolí vítěze i poraženého – každý zažije přesilu i obranu.' },
+
+{ id:'g-liga', type:'game', name:'Mini turnaj „Liga Olymp“', min:20, skills:['tym','cista','prihravka'], grp:'both', gear:['micky','rozl','branky?','piskalka'],
+  prep:'20 dětí: 4 týmy po 5 na dvou hřištích (A–B a C–D, pak A–C a B–D, nakonec A–D a B–C). 13 dětí: 3 týmy po 4 + 1 rozhodčí; jeden tým vždy rozhoduje a počítá body. Tabulka na papíře.',
+  steps:[
+    'Rozlosuj týmy a pojmenuj je (třeba barvy nebo hráči z NHL). Každý tým si vybere kapitána.',
+    'Kola trvají 5–6 minut. Výhra = 3 body, remíza = 1 bod, plus 1 bod za čistou hru (bez nepovolených zákroků).',
+    'Po každém kole podání ruky se soupeřem a kratičká pochvala od kapitána.',
+    'Na konci vyhlásíš pořadí a „Cenu fair play“ pro tým s nejčistší hrou.'
+  ],
+  tips:['Vítěze nepřeceňuj – hlavní cenou je Cena fair play.','Zajisti, aby týmy byly vyrovnané. Při nerovnosti týmy po kole prostřídej.'],
+  easier:'Kratší kola (4 min) a po každém kole prohození hráčů.',
+  harder:'Delší kola a hra dle pravidel bez trenérova zásahu.',
+  fun:'Tabulka, týmy a ceny – děti mají pocit opravdové ligy.' },
+
+{ id:'g-dva', type:'game', name:'Dva míčky', min:10, skills:['cit','precisleni','tym'], grp:'pa', gear:['micky','rozl','branky?'],
+  prep:'Týmy 4 na 4, dvě branky nebo malé branky, dva míčky najednou. Míčky je dobré odlišit – jeden s páskou.',
+  steps:[
+    'Hraje se se dvěma míčky najednou. Gól do soupeřovy branky se počítá za každý míček zvlášť.',
+    'Hráči musí sledovat oba míčky, nabízet se a mluvit spolu.',
+    'Po gólu se míček vrací hned do hry od branky.',
+    'Po 3 minutách změna týmů nebo hřišť.'
+  ],
+  tips:['Děti, které se dívají jen na jeden míček, hru nevidí. Pochval rozhlížení.','Hlídej bezpečnost: dva míčky znamenají víc nečekaných směrů, drž hůlky dole.'],
+  easier:'Druhý míček přidej až po minutě hry.',
+  harder:'Povinná přihrávka s jedním míčkem a střela druhým.',
+  fun:'Dva míčky = dvojnásobný chaos a legrace, a nikdo nestojí bez míčku.' },
+
+{ id:'g-bez', type:'game', name:'Hra bez rozhodčího', min:15, skills:['cista','tym'], grp:'ut', gear:['micky','rozl','branky?'],
+  prep:'Hřiště 4 na 4 nebo 5 na 5. Trenér pozoruje a nezasahuje – pouze zapisuje fair-play body. Dohodněte se předem na pravidlech.',
+  steps:[
+    'Hraje se bez rozhodčího. Hráči sami hlásí své chyby (míč mimo, dotyk, faul) a hra pokračuje.',
+    'Spor řeší kapitáni; nepodaří-li se, vítězí kámen–nůžky–papír.',
+    'Trenér zapisuje fair-play body za čestné přiznání, gesto fair play a pomoc soupeři.',
+    'Po zápase děti samy zhodnotí, jak to šlo a co udělat příště.'
+  ],
+  tips:['Pomoz jen tehdy, když by hrozilo zranění. Jinak nech děti vyřešit spor samy.','Nezapomeň pochválit i soupeře, který poctivě přiznal chybu.'],
+  easier:'Trenér jako „nápověda“ pro sporné situace a jasná pravidla.',
+  harder:'Bez diskusí: spor řeší kapitán a jeho rozhodnutí platí bez námitek.',
+  fun:'Děti za sebe přebírají odpovědnost a berou hru vážněji i férověji.' },
+
+{ id:'g-zony', type:'game', name:'Zóny', min:12, skills:['pohyb','tym','precisleni'], grp:'ut', gear:['micky','rozl','branky?'],
+  prep:'Hřiště rozděl na 3 pásy (obranná, střední, útočná zóna) čárami z rozlišováků. Týmy 5 na 5 (nebo 4 na 4).',
+  steps:[
+    'Každý tým rozestaví hráče v poměru 2–2–1 do zón. Hráč smí do jiné zóny jen po přihrávce.',
+    'Míček musí projít přihrávkou všemi třemi zónami, než se smí střílet.',
+    'Po přihrávce do další zóny se jeden hráč smí přesunout za míčkem.',
+    'Po 4 minutách zóny rozpusť a hrajte volně – co se změnilo?'
+  ],
+  tips:['Zdůrazni, že pohyb po přihrávce je klíčový – kdo přihraje a stojí, hru zpomaluje.','Rozmístění do šířky a hloubky se děti učí nejlíp, když jim hra „vynutí“ pozice.'],
+  easier:'Jen dvě zóny a volné přesouvání po přihrávce.',
+  harder:'Zóny se mění každých 90 sekund, každá zóna má svou povinnost.',
+  fun:'Hra připomíná šachovou partii: děti přemýšlejí o rozestavení a baví je ho vyzkoušet.' },
+
+{ id:'g-rozhodci', type:'game', name:'Zápas s dětským rozhodčím', min:20, skills:['cista','tym'], grp:'both', gear:['micky','rozl','branky?','piskalka'],
+  prep:'Dva týmy podle počtu dětí (6 na 6 + rozhodčí pro 13 dětí; na dvou hřištích 5 na 5 pro 20). Rozhodčí má píšťalku a rozlišovák jiné barvy.',
+  steps:[
+    'Před zápasem krátké představení pravidel a signálů rukou. Rozhodčí se mění každé 4 minuty.',
+    'Rozhodčí píská jen jasné chyby (kontakt, vysoká hůlka, míč mimo). Trenér radí, ale nerozhoduje.',
+    'Hráči i trenér rozhodnutí rozhodčího respektují, žádné diskuse. Po zápase mu poděkují.',
+    'Na závěr podání ruky s protivníky a s rozhodčím.'
+  ],
+  tips:['Posilni rozhodčího: „Jsi šéf hřiště. Rozhoduj, jak to vidíš.“','Pochval děti, které rozhodčímu poděkují nebo ho podpoří.'],
+  easier:'Rozhodčí jen počítá body, píská trenér.',
+  harder:'Rozhodčí smí zahrát i volný míč za nečistou hru (hůlka nad pasem, držení).',
+  fun:'Dětský rozhodčí je velká zodpovědnost a děti si hned víc váží práce rozhodčích.' }
+];
+
+/* ---------------------------- PLÁN 20 TÝDNŮ ---------------------------- */
+const PHASES = [
+  { n:'Míček a parta', d:'Seznámit se s míčkem a hůlkou, naučit se jména a první pravidla fair play.' },
+  { n:'Střelba a souboj', d:'Trefit cíl, přihrávka před střelou a čistý souboj bez kontaktu.' },
+  { n:'Přečíslení a prostor', d:'Hledat volné místo, hrát 2 na 1 a 3 na 2 a pomáhat spoluhráči.' },
+  { n:'Rychlost a kombinace', d:'Zrychlit hru, přihrávka a pohyb, kombinace ve dvojicích a trojicích.' },
+  { n:'Zápas a tým', d:'Pravidla, rozhodčí, taktika a společná zodpovědnost za hru.' }
+];
+/* [téma, rozcvička, cvičení 1, cvičení 2, hra, cíl týmové kultury] */
+const PLANS = {
+pa:[
+ ['Kamarád míček','w-honicka','d-cit','d-labyrint','g-male','Zavádíme pozdrav a podání ruky s trenérem při příchodu i odchodu.'],
+ ['Míček se mnou, hlava nahoře','w-vlacek','d-labyrint','d-stafeta','g-ctyri','Učíme se jména: před přihrávkou zavolej jméno spoluhráče.'],
+ ['První přihrávky','w-semafor','d-branky','d-ruce','g-dvojity','Kapitán týdne poprvé – vede pozdrav a rozdává míčky.'],
+ ['Parta na hřišti','w-poklad','d-branky','d-cit','g-dva','Čistá hra: hůlka dole, bez kontaktu – chválíme každý čistý souboj.'],
+ ['Střelba na terče','w-draha','d-terce','d-labyrint','g-dvojity','Chválíme dřív než kritizujeme: každý pochválí jednoho spoluhráče.'],
+ ['Střelba po přihrávce','w-honicka','d-terce','d-strelba','g-male','Gratulujeme: kdo dá gól, poděkuje za přihrávku a ostatní zatleskají.'],
+ ['Souboj o míček','w-poklad','d-poklad','d-cit','g-ctyri','Respekt v souboji: po souboji se podáme ruku nebo kývneme.'],
+ ['Souboj čistě','w-semafor','d-poklad','d-2na1','g-joker','Fér hra: kdo sám přizná dotyk nebo faul, získá bod pro tým.'],
+ ['Dva proti jednomu','w-vlacek','d-2na1','d-ruce','g-male','Pomáháme si: kdo přihrál na gól, je hrdina stejně jako střelec.'],
+ ['Hledáme volné místo','w-draha','d-pohyb','d-branky','g-ctyri','Nikdo nezůstane stranou: přihrajeme i tomu nejtišímu.'],
+ ['Tři proti dvěma','w-honicka','d-3na2','d-2na1','g-joker','Při prohře zůstáváme slušní – po zápase děkujeme soupeřům.'],
+ ['Pomáháme si','w-semafor','d-pohyb','d-stafeta','g-dva','Kapitán týdne řeší spory pomocí kámen–nůžky–papír.'],
+ ['Rychlé nohy, rychlý míček','w-draha','d-stafeta','d-branky','g-dvojity','Povzbuzujeme nahlas: fandíme i týmu, který zrovna nehraje.'],
+ ['Přihrávka a běh','w-vlacek','d-branky','d-strelba','g-male','Střídáme se bez připomínání – kdo čeká, pomáhá s míčky.'],
+ ['Kombinace ve dvojicích','w-poklad','d-2na1','d-strelba','g-joker','Tým rozhoduje společně: děti si samy domluví rozestavění.'],
+ ['Rychlý protiútok','w-honicka','d-3na2','d-terce','g-ctyri','Rychle neznamená hrubě: hůlka dole i ve vysokém tempu.'],
+ ['Jsme tým','w-semafor','d-stafeta','d-3na2','g-rozhodci','Dětský rozhodčí píská a ostatní ho respektují.'],
+ ['Hrajeme podle pravidel','w-draha','d-pohyb','d-strelba','g-joker','Poděkování rozhodčímu a soupeři je samozřejmost.'],
+ ['Každý hraje, každý pomáhá','w-poklad','d-2na1','d-branky','g-ctyri','Každý dostane roli v týmu a umí říct, v čem je dobrý.'],
+ ['Závěrečná Liga Olymp','w-vlacek','d-cit','d-stafeta','g-liga','Slavíme společně: potlesk pro všechny a poděkování za půlrok.']
+],
+ut:[
+ ['Znovu základy: míček a hůlka','w-dyn','d-metronom','d-branky','g-male','Zavádíme pozdrav a podání ruky; každý se představí novým spoluhráčům.'],
+ ['Vedení míčku v rychlosti','w-draha','d-metronom','d-ruce','g-tri','Chválíme dřív než kritizujeme: „chvála – rada – chvála“ mezi spoluhráči.'],
+ ['Přihrávka a zpracování','w-semafor','d-trojuhelnik','d-ruce','g-povinna','Kapitán týdne poprvé – vede rozcvičku a rozdá rozlišováky.'],
+ ['Parta a pravidla','w-honicka','d-trojuhelnik','d-pohyb','g-male','Čistá hra: hůlka pod pasem, bez kontaktu a bez držení.'],
+ ['Střelba z místa','w-dyn','d-strelba','d-metronom','g-male','Rada po střelbě: řekni, co se povedlo, a jednu radu na zlepšení.'],
+ ['Střelba po přihrávce','w-draha','d-strelba','d-trojuhelnik','g-povinna','Oceníme přihrávku: poděkuj tomu, kdo ti přihrál na střelu.'],
+ ['Souboj 1 na 1 v útoku','w-honicka','d-obrana','d-strelba','g-tri','Respekt v souboji: tvrdě do míčku, ohleduplně k soupeři.'],
+ ['Obrana bez kontaktu','w-semafor','d-obrana','d-ruce','g-joker','Přiznáme faul bez hádky; spory řeší kapitán.'],
+ ['Dva proti jednomu','w-dyn','d-2na1','d-obrana','g-presila','Komunikace ve hře: volej spoluhráče jménem, ne křikem.'],
+ ['Tři proti dvěma','w-draha','d-3na2','d-trojuhelnik','g-zony','Chyby jsou v pohodě: po chybě se podporujeme, nikoho neposmíváme.'],
+ ['Pohyb bez míčku','w-semafor','d-pohyb','d-2na1','g-povinna','Kapitán týdne rozdělí týmy tak, aby byly vyrovnané.'],
+ ['Rondo a prostor','w-honicka','d-rondo','d-pohyb','g-zony','Sdílíme prostor: kdo stojí stranou, dostane míček.'],
+ ['Rychlé rondo','w-dyn','d-rondo','d-metronom','g-tri','Povzbuzování: pochval spoluhráče pozitivně aspoň 3× za trénink.'],
+ ['Přihrávka, pohyb, střela','w-draha','d-strelba','d-trojuhelnik','g-male','Po chybě se zahrajeme zpátky do hry, bez posměchu.'],
+ ['Kombinace 3 na 2','w-semafor','d-3na2','d-strelba','g-presila','Domluva na hřišti: tým si před zápasem řekne plán za 30 sekund.'],
+ ['Rychlý přechod','w-honicka','d-3na2','d-pohyb','g-joker','Rychlost bez agrese: pravidla platí i ve vysokém tempu.'],
+ ['Zápas s rozhodčím','w-dyn','d-obrana','d-rondo','g-rozhodci','Dětský rozhodčí: ostatní přijmou jeho rozhodnutí bez diskuse.'],
+ ['Hra bez rozhodčího','w-draha','d-pohyb','d-3na2','g-bez','Samoregulace: hrajeme bez rozhodčího a sbíráme fair-play body.'],
+ ['Taktika: zóny','w-semafor','d-2na1','d-strelba','g-zony','Týmová taktika: tým sám vybere plán a po hře ho vyhodnotí.'],
+ ['Finále Ligy Olymp','w-honicka','d-rondo','d-strelba','g-liga','Závěr půlroku: děti vyberou „hráče týmové kultury“ a poděkují si.']
+]};
+
+const CULTURE = [
+ { t:'Pozdrav a podání ruky', p:'Na začátku i na konci tréninku si děti podají ruku s trenérem i mezi sebou a řeknou „ahoj“ s očním kontaktem. Po zápase podají ruku soupeřům.' },
+ { t:'Chválíme dřív než kritizujeme', p:'Nejdřív řekni, co se povedlo, pak jednu radu a znovu pochval. Učíme to i děti: každé na konci tréninku pochválí jednoho spoluhráče.' },
+ { t:'Kapitán týdne', p:'Každý týden jiné dítě: vede pozdrav, nosí míčky, píská remízy nebo losuje týmy. Za 20 týdnů se vystřídají všichni a každý zažije zodpovědnost.' },
+ { t:'Čistá hra', p:'Hůlka dole, bez kontaktu, bez držení. Za čistou hru dostane tým bonusový bod a trenér ji pochválí nahlas. Cena fair play na konci ligy.' }
+];
+
+/* =====================================================================
+   APLIKACE
+   ===================================================================== */
+const GROUPS = {
+  ut:{ id:'ut', short:'Út', day:'Úterý', dow:2, start:'15:30', end:'16:30', grade:'6.–9. třída', age:'12–15 let', kids:13 },
+  pa:{ id:'pa', short:'Pá', day:'Pátek', dow:5, start:'16:00', end:'17:00', grade:'1.–5. třída', age:'6–11 let', kids:20 }
+};
+const DAYS = ['neděle','pondělí','úterý','středa','čtvrtek','pátek','sobota'];
+const BLOCKS = ['warm','drill','game'];
+const ACT = Object.fromEntries(ACTS.map(a => [a.id, a]));
+const RM = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Math.random().toString(36).slice(2, 9);
+const clone = o => JSON.parse(JSON.stringify(o));
+const pad = n => String(n).padStart(2, '0');
+const fmt = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+
+const IC = {
+  grip:'<svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="3.5" r="1.5"/><circle cx="11" cy="3.5" r="1.5"/><circle cx="5" cy="9" r="1.5"/><circle cx="11" cy="9" r="1.5"/><circle cx="5" cy="14.5" r="1.5"/><circle cx="11" cy="14.5" r="1.5"/></svg>',
+  plus:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 3v12M3 9h12"/></svg>',
+  x:'<svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14"/></svg>',
+  check:'<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7"/></svg>',
+  chev:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg>',
+  cal:'<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="14" height="12.5" rx="3"/><path d="M3 8.5h14M7 2.8v3M13 2.8v3"/></svg>'
+};
+
+/* ---------- spring (Apple-styl: response + damping ratio, s přenosem rychlosti) ---------- */
+function spring({ from, to, velocity = 0, response = .4, damping = .85, eps = .25, onUpdate, onDone }) {
+  const w = 2 * Math.PI / response, k = w * w, c = 2 * damping * w;
+  let x = from, v = velocity, last = performance.now(), raf = 0, stopped = false;
+  const h = { stop(){ stopped = true; cancelAnimationFrame(raf); }, get x(){ return x; }, get v(){ return v; } };
+  if (RM.matches) { x = to; v = 0; onUpdate && onUpdate(to, 0); onDone && onDone(); return h; }
+  const step = now => {
+    if (stopped) return;
+    const dt = Math.min((now - last) / 1000, 1 / 30); last = now;
+    const n = Math.max(1, Math.ceil(dt / (1 / 240))), s = dt / n;
+    for (let i = 0; i < n; i++) { v += (-k * (x - to) - c * v) * s; x += v * s; }
+    if (Math.abs(v) < eps * 20 && Math.abs(x - to) < eps) { x = to; v = 0; onUpdate && onUpdate(x, 0); onDone && onDone(); return; }
+    onUpdate && onUpdate(x, v);
+    raf = requestAnimationFrame(step);
+  };
+  raf = requestAnimationFrame(step);
+  return h;
+}
+
+/* ---------- stav + localStorage ---------- */
+const KEY = 'olymp-florbal-v1';
+const blankPlan = () => ({ warm:[], drill:[], game:[], gameLen:20, notes:'' });
+let state = {
+  group:'ut', tab:'trenink',
+  plans:{ ut:blankPlan(), pa:blankPlan() },
+  saved:[], done:{ ut:Array(20).fill(false), pa:Array(20).fill(false) },
+  showOther:false, libType:'all', libSkill:'all', pickType:'all', phaseOpen:{ ut:{}, pa:{} }
+};
+
+function sanitize(raw) {
+  const s = state;
+  if (!raw || typeof raw !== 'object') return;
+  if (GROUPS[raw.group]) s.group = raw.group;
+  if (['trenink','knihovna','plan'].includes(raw.tab)) s.tab = raw.tab;
+  for (const g of ['ut','pa']) {
+    const p = raw.plans && raw.plans[g];
+    if (p) {
+      const np = blankPlan();
+      for (const b of BLOCKS) np[b] = (Array.isArray(p[b]) ? p[b] : []).filter(i => i && ACT[i.id]).map(i => ({ uid:uid(), id:i.id, min:Math.max(1, Math.min(60, i.min | 0 || ACT[i.id].min)) }));
+      np.gameLen = p.gameLen === 25 ? 25 : 20;
+      np.notes = typeof p.notes === 'string' ? p.notes.slice(0, 4000) : '';
+      s.plans[g] = np;
+    }
+    const d = raw.done && raw.done[g];
+    if (Array.isArray(d)) s.done[g] = Array.from({ length:20 }, (_, i) => !!d[i]);
+    if (raw.phaseOpen && raw.phaseOpen[g] && typeof raw.phaseOpen[g] === 'object') s.phaseOpen[g] = raw.phaseOpen[g];
+  }
+  if (Array.isArray(raw.saved)) s.saved = raw.saved.filter(x => x && GROUPS[x.group] && x.plan).slice(0, 100).map(x => {
+    const np = blankPlan();
+    for (const b of BLOCKS) np[b] = (x.plan[b] || []).filter(i => i && ACT[i.id]).map(i => ({ uid:uid(), id:i.id, min:i.min | 0 || ACT[i.id].min }));
+    np.gameLen = x.plan.gameLen === 25 ? 25 : 20; np.notes = typeof x.plan.notes === 'string' ? x.plan.notes : '';
+    return { id:String(x.id || uid()), name:String(x.name || 'Trénink').slice(0, 60), group:x.group, date:String(x.date || ''), plan:np };
+  });
+  s.showOther = !!raw.showOther;
+  if (['all','warm','drill','game'].includes(raw.libType)) s.libType = raw.libType;
+  if (['all','warm','drill','game'].includes(raw.pickType)) s.pickType = raw.pickType;
+  if (raw.libSkill === 'all' || SKILLS[raw.libSkill]) s.libSkill = raw.libSkill;
+}
+let hadStored = false;
+try { const r = localStorage.getItem(KEY); if (r) { hadStored = true; sanitize(JSON.parse(r)); } } catch (e) { /* soukromý režim apod. */ }
+let saveT = 0;
+function persist() {
+  clearTimeout(saveT);
+  saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignoruj */ } }, 150);
+}
+const plan = () => state.plans[state.group];
+const grp = () => GROUPS[state.group];
+const isMine = a => state.showOther || a.grp === 'both' || a.grp === state.group;
+
+/* ---------- datum: příští trénink ---------- */
+function nextSession(g, now = new Date()) {
+  const [sh, sm] = g.start.split(':').map(Number), [eh, em] = g.end.split(':').map(Number);
+  let add = (g.dow - now.getDay() + 7) % 7;
+  const at = (d, h, m) => new Date(now.getFullYear(), now.getMonth(), now.getDate() + d, h, m);
+  if (add === 0 && now >= at(0, eh, em)) add = 7;
+  const start = at(add, sh, sm);
+  const live = add === 0 && now >= start;
+  let rel;
+  if (live) rel = 'právě probíhá';
+  else if (add === 0) rel = `dnes v ${g.start}`;
+  else if (add === 1) rel = 'zítra';
+  else rel = `za ${add} ${add < 5 ? 'dny' : 'dní'}`;
+  return { start, live, rel, label:`${DAYS[start.getDay()]} ${start.getDate()}. ${start.getMonth() + 1}.` };
+}
+const currentWeek = g => { const i = state.done[g].findIndex(d => !d); return i < 0 ? -1 : i; };
+const phaseOf = w => Math.floor(w / 4);
+
+/* ---------- výpočty tréninku ---------- */
+const targetOf = (p, b) => b === 'game' ? p.gameLen : 15;
+const sumOf = items => items.reduce((s, i) => s + i.min, 0);
+function timeline(p, g) {
+  const [h, m] = g.start.split(':').map(Number);
+  let t = h * 60 + m; const t0 = t;
+  const out = { start:t, items:[], blocks:{} };
+  out.att = { from:t, to:t + 5 }; t += 5;
+  for (const b of BLOCKS) {
+    const target = targetOf(p, b), sum = sumOf(p[b]), dur = p[b].length ? sum : target;
+    out.blocks[b] = { from:t, to:t + dur, target, sum, dur };
+    t += dur;
+  }
+  out.rev = { from:t, to:t + 5 }; t += 5;
+  out.end = t; out.total = t - t0;
+  return out;
+}
+function equalizeItems(items, target) {
+  if (!items.length) return;
+  let diff = target - sumOf(items), guard = 400;
+  while (diff !== 0 && guard--) {
+    if (diff > 0) { const x = items.reduce((a, b) => b.min < a.min ? b : a); x.min++; diff--; }
+    else { const c = items.filter(i => i.min > 1); if (!c.length) break; const x = c.reduce((a, b) => b.min > a.min ? b : a); x.min--; diff++; }
+  }
+}
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function pickFor(type, target) {
+  const g = state.group, used = new Set(BLOCKS.flatMap(b => plan()[b].map(i => i.id)));
+  const pool = shuffle(ACTS.filter(a => a.type === type && (a.grp === 'both' || a.grp === g)));
+  pool.sort((a, b) => (used.has(a.id) ? 1 : 0) - (used.has(b.id) ? 1 : 0));
+  const out = []; let sum = 0;
+  for (const a of pool) {
+    if (out.length >= 2 || sum >= target - (type === 'game' ? 5 : 2)) break;
+    if (out.length && type === 'drill' && ACT[out[0].id].skills[0] === a.skills[0]) continue;
+    out.push({ uid:uid(), id:a.id, min:a.min }); sum += a.min;
+  }
+  equalizeItems(out, target);
+  return out;
+}
+
+/* ---------- toast ---------- */
+const toastEl = $('#toast'); let toastTimer = 0, toastUndo = null, toastSp = null;
+function toast(msg, undo) {
+  clearTimeout(toastTimer); toastUndo = undo || null;
+  toastEl.innerHTML = `<span>${esc(msg)}</span>${undo ? '<button type="button" class="tap" data-act="toast-undo">Zpět</button>' : ''}`;
+  toastEl.hidden = false;
+  if (toastSp) toastSp.stop();
+  toastEl.style.opacity = '0';
+  toastSp = spring({ from:26, to:0, response:.42, damping:.8, onUpdate:y => { toastEl.style.transform = `translate3d(-50%,${y}px,0)`; toastEl.style.opacity = String(Math.min(1, 1 - y / 26 + .15)); } });
+  toastTimer = setTimeout(hideToast, undo ? 6500 : 3200);
+}
+function hideToast() {
+  clearTimeout(toastTimer); if (toastSp) toastSp.stop();
+  if (toastEl.hidden) return;
+  toastSp = spring({ from:0, to:30, response:.3, damping:1, onUpdate:y => { toastEl.style.transform = `translate3d(-50%,${y}px,0)`; toastEl.style.opacity = String(Math.max(0, 1 - y / 30)); }, onDone:() => { toastEl.hidden = true; } });
+}
+
+/* ---------- mutace s možností Zpět ---------- */
+function commit(msg, fn, opts = {}) {
+  const g = state.group, snap = clone(state.plans[g]);
+  fn(state.plans[g]);
+  persist(); renderTrain();
+  if (msg) toast(msg, () => { state.plans[g] = snap; persist(); renderAll(); syncNotes(); });
+}
+function defaultBlock(a) { return a.type; }
+function addActivity(id, block, index, silent) {
+  const a = ACT[id]; const b = block || defaultBlock(a); const it = { uid:uid(), id, min:a.min };
+  commit(silent ? '' : `Přidáno do bloku „${TYPES[b].block}“: ${a.name}`, p => { const arr = p[b]; arr.splice(index == null ? arr.length : Math.min(index, arr.length), 0, it); });
+  return it.uid;
+}
+function findItem(p, u) { for (const b of BLOCKS) { const i = p[b].findIndex(x => x.uid === u); if (i >= 0) return { b, i, it:p[b][i] }; } return null; }
+
+/* ---------- render: skupiny + příští trénink ---------- */
+function renderGroups() {
+  $('#groups').innerHTML = Object.values(GROUPS).map(g => `
+    <button type="button" class="gcard tap" role="radio" aria-checked="${g.id === state.group}" data-act="group" data-g="${g.id}">
+      <span class="gcheck">${IC.check}</span>
+      <span class="gday">${g.day}</span>
+      <span class="gtime">${g.start}–${g.end}</span>
+      <span class="gmeta">${g.grade}</span>
+      <span class="gmeta">${g.age} · ${g.kids} dětí</span>
+    </button>`).join('');
+  const mini = $('#miniSeg'); mini.style.setProperty('--i', state.group === 'ut' ? 0 : 1);
+  $$('button', mini).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.g === state.group)));
+}
+function renderNext() {
+  const g = grp(), n = nextSession(g), w = currentWeek(g.id);
+  const wk = w < 0 ? 'Plán 20 týdnů je odtrénovaný' : `Plán: týden ${w + 1} · ${PLANS[g.id][w][0]}`;
+  $('#next').innerHTML = `
+    <span class="ni">${IC.cal}</span>
+    <div class="nt"><div class="nl">Příští trénink</div>
+      <div class="nv">${n.label} · ${g.start}–${g.end} <span class="pill ${n.live ? 'ok' : ''}" style="margin-left:4px;min-height:24px;font-size:12.5px">${n.rel}</span></div>
+      <div class="nw">${esc(wk)}</div></div>
+    ${w >= 0 ? `<button type="button" class="btn tint sm tap" data-act="open-week" data-w="${w}">Sestavit podle plánu</button>` : ''}`;
+}
+
+/* ---------- render: trénink ---------- */
+function actRow(i, block) {
+  const a = ACT[i.id];
+  return `<div class="arow" data-drag="item" data-uid="${i.uid}" data-aid="${a.id}" data-block="${block}">
+    <button type="button" class="grip" data-grip data-fk="grip|${i.uid}" aria-label="Přesunout: ${esc(a.name)}. Šipkami nahoru a dolů změníš pořadí.">${IC.grip}</button>
+    <button type="button" class="aname" data-act="detail" data-id="${a.id}">${esc(a.name)}</button>
+    <button type="button" class="icon-btn rm tap" data-act="remove" data-uid="${i.uid}" data-fk="rm|${i.uid}" aria-label="Odebrat: ${esc(a.name)}">${IC.x}</button>
+    <div class="ameta">
+      <div class="tags">${a.skills.slice(0, 1).map(s => `<span class="tag">${SKILLS[s]}</span>`).join("")}</div>
+      <div class="stepper" role="group" aria-label="Minuty: ${esc(a.name)}">
+        <button type="button" class="tap" data-act="min" data-d="-1" data-uid="${i.uid}" data-fk="mm|${i.uid}" aria-label="O minutu méně">−</button>
+        <output aria-live="polite">${i.min} min</output>
+        <button type="button" class="tap" data-act="min" data-d="1" data-uid="${i.uid}" data-fk="mp|${i.uid}" aria-label="O minutu více">+</button>
+      </div>
+    </div></div>`;
+}
+function renderTrain() {
+  const p = plan(), g = grp(), tl = timeline(p, g);
+  const active = document.activeElement && document.activeElement.closest && document.activeElement.closest('[data-fk]');
+  const fk = active ? active.dataset.fk : null;
+  const diff = tl.total - 60;
+  const pill = diff === 0 ? `<span class="pill ok">${IC.check} Přesně hodina</span>`
+    : diff > 0 ? `<span class="pill warn">Přesahuje o ${diff} min</span>`
+    : `<span class="pill">Zbývá ${-diff} min do hodiny</span>`;
+  let h = `<div class="tl-top">
+      <div><div class="sub" style="margin-bottom:4px">${fmt(tl.start)}–${fmt(tl.end)} · celkem ${tl.total} min</div>${pill}</div>
+      <div class="tl-actions"><button type="button" class="btn primary tap" data-act="suggest">Navrhnout trénink</button><button type="button" class="btn tap" data-act="clear">Vyčistit</button></div>
+    </div>
+    <div class="fixed"><span class="dot"></span>Docházka<span class="ft">${fmt(tl.att.from)}–${fmt(tl.att.to)} · 5 min</span></div>`;
+  for (const b of BLOCKS) {
+    const bl = tl.blocks[b], items = p[b];
+    const st = bl.sum === bl.target ? 'ok' : bl.sum > bl.target ? 'over' : '';
+    const pct = Math.min(100, Math.round(bl.sum / bl.target * 100));
+    const status = !items.length ? '' : bl.sum === bl.target ? `<span class="okt">${IC.check} Přesně ${bl.target} min</span>`
+      : bl.sum < bl.target ? `<span>Chybí ${bl.target - bl.sum} min</span>` : `<span>Navíc ${bl.sum - bl.target} min</span>`;
+    h += `<section class="block" data-block="${b}" aria-label="${TYPES[b].block}">
+      <header class="bh"><span class="dot ${b}"></span>
+        <div class="bt"><h3>${TYPES[b].block}</h3><div class="bsub">${fmt(bl.from)}–${fmt(bl.to)} · ${bl.dur} min${items.length ? '' : ' (plán)'}</div></div>
+        ${b === 'game' ? `<div class="mini-seg" role="group" aria-label="Délka zápasu" style="--i:${p.gameLen === 20 ? 0 : 1}"><span class="seg-i" aria-hidden="true"></span>
+            <button type="button" class="tap" data-act="gamelen" data-v="20" aria-pressed="${p.gameLen === 20}">20 min</button>
+            <button type="button" class="tap" data-act="gamelen" data-v="25" aria-pressed="${p.gameLen === 25}">25 min</button></div>` : ''}
+        <button type="button" class="icon-btn add tap" data-act="goto-picker" data-type="${b}" aria-label="Přidat do bloku ${TYPES[b].block}">${IC.plus}</button>
+      </header>
+      <div class="fillrow"><div class="fill ${st}" role="img" aria-label="Naplnění ${bl.sum} z ${bl.target} minut"><i style="--p:${pct}%"></i></div><span class="fill-t">${bl.sum} / ${bl.target} min</span></div>
+      ${items.length ? `<div class="statusline">${status}${bl.sum !== bl.target ? `<button type="button" class="btn tint sm tap" data-act="equalize" data-b="${b}">Vyrovnat na ${bl.target} min</button>` : ''}</div>` : ''}
+      <div class="list" data-list="${b}">${items.length ? items.map(i => actRow(i, b)).join('') : '<div class="empty">Přetáhni sem aktivitu z knihovny za úchyt, nebo klepni na +</div>'}</div>
+    </section>`;
+    if (b === 'game') h += `<div class="fixed" style="margin-bottom:0"><span class="dot"></span>Zhodnocení<span class="ft">${fmt(tl.rev.from)}–${fmt(tl.rev.to)} · 5 min</span></div>`;
+  }
+  $('#tl').innerHTML = h;
+  renderSum(tl);
+  if (fk) { const n = $(`#tl [data-fk="${fk}"]`); if (n) n.focus({ preventScroll:true }); }
+}
+function renderSum() {
+  const p = plan(), g = grp();
+  const need = {}, skills = new Set();
+  for (const b of BLOCKS) for (const i of p[b]) {
+    const a = ACT[i.id]; a.skills.forEach(s => skills.add(s));
+    a.gear.forEach(x => { const opt = x.endsWith('?'), id = opt ? x.slice(0, -1) : x; need[id] = !!need[id] || !opt; });
+  }
+  const ids = Object.keys(need);
+  const lab = id => need[id] ? GEAR[id].stock : 'volitelně' + (GEAR[id].stock ? ' · ' + GEAR[id].stock : '');
+  const gear = ids.length ? `<div class="gearlist">${ids.map(id => `<div class="gear"><b style="font-weight:600">${GEAR[id].n}</b><span>${lab(id)}</span></div>`).join('')}</div>` : '<p class="sub">Přidej aktivity a tady se objeví, co máš vzít do haly.</p>';
+  const teams = g.id === 'ut'
+    ? `<p class="hint"><b>13 dětí:</b> 2 týmy po 6 + 1 rozhodčí (točí se po každém kole, kapitán týdne píská první). Rozlišováky nosí jeden tým (6 z 10 ks).<br><span class="sub">Při 11–12 dětech: 5 na 5 + dva rozhodčí nebo střídání.</span></p>`
+    : `<p class="hint"><b>20 dětí:</b> 4 týmy po 5 na dvou hřištích (A–B a C–D, pak se losují nové dvojice). Rozlišováky nosí vždy jeden tým z dvojice – dohromady 10 ks.<br><span class="sub">Při menší účasti: 3 týmy po 5 a třetí hlídá čas a počítá body.</span></p>`;
+  $('#sum').innerHTML = `
+    <section class="card sumcard"><h3>Souhrn pomůcek</h3>${gear}
+      ${skills.size ? `<div class="tags" style="margin-top:10px">${[...skills].map(s => `<span class="tag">${SKILLS[s]}</span>`).join('')}</div>` : ''}</section>
+    <section class="card sumcard"><h3>Rozdělení do týmů</h3>${teams}</section>`;
+}
+function renderPicker() {
+  const list = ACTS.filter(a => isMine(a) && (state.pickType === 'all' || a.type === state.pickType));
+  const chip = (v, l) => `<button type="button" class="chip tap" data-act="pick-type" data-v="${v}" aria-pressed="${state.pickType === v}">${l}</button>`;
+  $('#picker').innerHTML = `
+    <div class="ph"><h3>Knihovna aktivit</h3><p class="sub">Přetáhni za úchyt ${'<span style="display:inline-block;vertical-align:-3px">' + IC.grip + '</span>'} do bloku, nebo klepni na +.</p></div>
+    <div class="chips" role="group" aria-label="Typ aktivity">${chip('all', 'Vše')}${chip('warm', 'Rozcvičky')}${chip('drill', 'Cvičení')}${chip('game', 'Hry')}</div>
+    <label class="switch-row"><span>Zobrazit i druhou skupinu</span><span class="switch"><input type="checkbox" role="switch" data-act="show-other" ${state.showOther ? 'checked' : ''}><i></i></span></label>
+    <div class="plist">${list.map(a => `
+      <div class="prow" data-drag="lib" data-aid="${a.id}">
+        <button type="button" class="grip" data-grip aria-label="Přetáhnout do tréninku: ${esc(a.name)}">${IC.grip}</button>
+        <button type="button" class="pinfo" data-act="detail" data-id="${a.id}"><span class="pname">${esc(a.name)}</span>
+          <span class="pmeta"><span class="tag t-${a.type}">${TYPES[a.type].n}</span><span class="tag">${a.min} min</span>${state.showOther && a.grp !== 'both' && a.grp !== state.group ? `<span class="tag">${a.grp === 'ut' ? 'Út' : 'Pá'}</span>` : ''}</span></button>
+        <button type="button" class="icon-btn add tap" data-act="add" data-id="${a.id}" aria-label="Přidat do tréninku: ${esc(a.name)}">${IC.plus}</button>
+      </div>`).join('') || '<p class="nores">Nic k zobrazení.</p>'}</div>`;
+}
+function renderSaved() {
+  const items = state.saved.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  $('#saved').innerHTML = items.length ? items.map(s => {
+    const d = s.date ? new Date(s.date) : null, tot = BLOCKS.reduce((n, b) => n + sumOf(s.plan[b]), 10);
+    return `<div class="srow"><div class="st"><div class="sn">${esc(s.name)}</div><div class="sm">${GROUPS[s.group].short} · ${d && !isNaN(d) ? `${d.getDate()}. ${d.getMonth() + 1}.` : ''} · ${tot} min</div></div>
+      <button type="button" class="btn sm tap" data-act="load" data-id="${esc(s.id)}">Načíst</button>
+      <button type="button" class="icon-btn tap" data-act="del-saved" data-id="${esc(s.id)}" aria-label="Smazat: ${esc(s.name)}">${IC.x}</button></div>`;
+  }).join('') : '<p class="sub">Zatím nic. Sestav trénink a ulož ho pod názvem.</p>';
+}
+function syncNotes() { const n = $('#notes'); if (n.value !== plan().notes) n.value = plan().notes; }
+
+/* ---------- render: knihovna ---------- */
+function renderLib() {
+  const chip = (v, l, key) => `<button type="button" class="chip tap" data-act="${key}" data-v="${v}" aria-pressed="${state[key === 'lib-type' ? 'libType' : 'libSkill'] === v}">${l}</button>`;
+  const list = ACTS.filter(a => isMine(a) && (state.libType === 'all' || a.type === state.libType) && (state.libSkill === 'all' || a.skills.includes(state.libSkill)));
+  $('#libTop').innerHTML = `
+    <div class="chips" role="group" aria-label="Typ">${chip('all', 'Vše', 'lib-type')}${chip('warm', TYPES.warm.pl, 'lib-type')}${chip('drill', TYPES.drill.pl, 'lib-type')}${chip('game', TYPES.game.pl, 'lib-type')}</div>
+    <div class="chips" role="group" aria-label="Dovednost">${chip('all', 'Všechny dovednosti', 'lib-skill')}${Object.entries(SKILLS).map(([k, v]) => chip(k, v, 'lib-skill')).join('')}</div>
+    <div class="lib-meta"><span class="sub">${list.length} ${list.length === 1 ? 'aktivita' : list.length < 5 && list.length > 1 ? 'aktivity' : 'aktivit'}</span>
+      <label class="switch-row"><span>Zobrazit i druhou skupinu</span><span class="switch"><input type="checkbox" role="switch" data-act="show-other" ${state.showOther ? 'checked' : ''}><i></i></span></label></div>`;
+  $('#lgrid').innerHTML = list.map(a => `
+    <button type="button" class="lcard tap" data-act="detail" data-id="${a.id}">
+      <div class="lc-top"><span class="tag t-${a.type}">${TYPES[a.type].n}</span><span class="lc-min">${a.min} min</span></div>
+      <h3>${esc(a.name)}</h3>
+      <p class="fun">${esc(a.fun)}</p>
+      <div class="tags">${a.skills.map(s => `<span class="tag">${SKILLS[s]}</span>`).join('')}</div>
+      <div class="lc-foot"><span>${GRP_LABEL[a.grp]}</span><span>${a.gear.filter(x => !x.endsWith('?')).map(x => GEAR[x].n).join(' · ')}</span></div>
+    </button>`).join('') || '<p class="nores" style="grid-column:1/-1">Žádná aktivita nevyhovuje filtru.</p>';
+}
+
+/* ---------- render: plán ---------- */
+function renderPlan() {
+  const g = grp(), gid = g.id, done = state.done[gid], doneN = done.filter(Boolean).length, cw = currentWeek(gid);
+  const open = state.phaseOpen[gid];
+  const slot = [['warm', 'Rozcvička'], ['drill', 'Cvičení'], ['drill', 'Cvičení'], ['game', 'Hra']];
+  let h = `<div class="card plan-head"><h2>Plán 20 týdnů · ${g.day}</h2>
+    <p class="sub" style="margin-top:4px">${g.grade} (${g.age}) · ${g.kids} dětí. Pět fází po čtyřech týdnech; každý týden má rozcvičku, dvě cvičení, hru a cíl týmové kultury.</p>
+    <div class="progress"><div class="fill"><i style="--p:${doneN * 5}%"></i></div><b>${doneN} / 20 týdnů</b></div></div><div class="phases">`;
+  PHASES.forEach((ph, pi) => {
+    const dn = done.slice(pi * 4, pi * 4 + 4).filter(Boolean).length;
+    const isOpen = open[pi] != null ? open[pi] : (cw >= 0 ? phaseOf(cw) === pi : pi === 4);
+    h += `<details class="phase" data-ph="${pi}" ${isOpen ? 'open' : ''}><summary class="tap"><span class="pn">${pi + 1}</span>
+      <div class="pt"><h3>${ph.n}</h3><p>Týdny ${pi * 4 + 1}–${pi * 4 + 4} · ${dn}/4 hotovo</p></div><span class="chev">${IC.chev}</span></summary>
+      <p class="sub" style="padding:0 14px 10px">${ph.d}</p><div class="weeks">`;
+    for (let w = pi * 4; w < pi * 4 + 4; w++) {
+      const [theme, wu, d1, d2, gm, goal] = PLANS[gid][w], ids = [wu, d1, d2, gm];
+      h += `<article class="week ${done[w] ? 'done' : ''}">
+        <div class="wh"><span class="wn">Týden ${w + 1}</span><h4>${esc(theme)}</h4></div>
+        <ul class="wlist">${ids.map((id, k) => `<li><button type="button" class="tap" data-act="detail" data-id="${id}"><span class="tag t-${slot[k][0]}">${slot[k][1]}</span><span>${esc(ACT[id].name)}</span></button></li>`).join('')}</ul>
+        <p class="goal"><b>Týmová kultura:</b> ${esc(goal)}</p>
+        <div class="wa"><button type="button" class="btn tint sm tap" data-act="open-week" data-w="${w}">Otevřít v sestavovači</button>
+          <label class="done-toggle"><input type="checkbox" data-act="done" data-w="${w}" ${done[w] ? 'checked' : ''}><span class="box">${IC.check}</span>Odtrénováno</label></div>
+      </article>`;
+    }
+    h += '</div></details>';
+  });
+  h += `</div><h2 class="sec">Týmová kultura</h2><div class="culture">${CULTURE.map((c, i) => `<article class="ccard"><div class="cn">${i + 1}</div><h3>${c.t}</h3><p>${c.p}</p></article>`).join('')}</div>`;
+  $('#v-plan').innerHTML = h;
+}
+
+/* ---------- navigace ---------- */
+function renderTabs() {
+  const order = ['trenink', 'knihovna', 'plan'];
+  $('#tabs').style.setProperty('--i', order.indexOf(state.tab));
+  $$('#tabs [role=tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === state.tab)));
+  order.forEach(t => { $('#v-' + t).hidden = t !== state.tab; });
+}
+function renderAll() {
+  renderGroups(); renderNext(); renderTabs();
+  if (state.tab === 'trenink') { renderTrain(); renderPicker(); renderSaved(); syncNotes(); }
+  else if (state.tab === 'knihovna') renderLib();
+  else renderPlan();
+}
+function setTab(t) {
+  if (t === state.tab) return;
+  state.tab = t; persist(); renderAll(); window.scrollTo(0, 0);
+}
+function setGroup(g) {
+  if (g === state.group) return;
+  state.group = g; persist(); renderAll();
+}
+
+/* ---------- akce ---------- */
+function openWeek(w) {
+  const row = PLANS[state.group][w], g = state.group;
+  const mk = ids => ids.map(id => ({ uid:uid(), id, min:ACT[id].min }));
+  const snap = clone(plan());
+  const np = plan();
+  np.warm = mk([row[1]]); np.drill = mk([row[2], row[3]]); np.game = mk([row[4]]);
+  equalizeItems(np.warm, 15); equalizeItems(np.drill, 15); equalizeItems(np.game, np.gameLen);
+  persist(); state.tab = 'trenink'; renderAll(); window.scrollTo(0, 0);
+  toast(`Týden ${w + 1} je v sestavovači`, () => { state.plans[g] = snap; persist(); renderAll(); syncNotes(); });
+}
+function doSuggest() {
+  const snap = clone(plan()), g = state.group, p = plan();
+  p.warm = pickFor('warm', 15); p.drill = pickFor('drill', 15); p.game = pickFor('game', p.gameLen);
+  persist(); renderTrain();
+  toast('Navržen nový trénink', () => { state.plans[g] = snap; persist(); renderAll(); syncNotes(); });
+}
+function doClear() {
+  const p = plan(); if (!BLOCKS.some(b => p[b].length)) { toast('Trénink je už prázdný'); return; }
+  commit('Trénink vyčištěn', q => { BLOCKS.forEach(b => q[b] = []); });
+}
+function doSave() {
+  const inp = $('#saveName'), p = plan();
+  if (!BLOCKS.some(b => p[b].length)) { toast('Nejdřív přidej nějaké aktivity'); return; }
+  const now = new Date(), name = inp.value.trim() || `${grp().short} · ${now.getDate()}. ${now.getMonth() + 1}.`;
+  const entry = { id:uid(), name, group:state.group, date:now.toISOString(), plan:clone(p) };
+  state.saved.unshift(entry); inp.value = ''; persist(); renderSaved();
+  toast(`Uloženo: ${name}`, () => { state.saved = state.saved.filter(s => s.id !== entry.id); persist(); renderSaved(); });
+}
+function doLoad(id) {
+  const s = state.saved.find(x => x.id === id); if (!s) return;
+  const g = s.group, snap = clone(state.plans[g]), prevG = state.group;
+  state.plans[g] = clone(s.plan); state.plans[g].notes = s.plan.notes || '';
+  BLOCKS.forEach(b => state.plans[g][b].forEach(i => i.uid = uid()));
+  state.group = g; persist(); renderAll(); window.scrollTo(0, 0);
+  toast(`Načteno: ${s.name}`, () => { state.plans[g] = snap; state.group = prevG; persist(); renderAll(); });
+}
+function doDelSaved(id) {
+  const i = state.saved.findIndex(x => x.id === id); if (i < 0) return;
+  const [s] = state.saved.splice(i, 1); persist(); renderSaved();
+  toast(`Smazáno: ${s.name}`, () => { state.saved.splice(i, 0, s); persist(); renderSaved(); });
+}
+function changeMin(u, d) {
+  const f = findItem(plan(), u); if (!f) return;
+  f.it.min = Math.max(1, Math.min(60, f.it.min + d)); persist(); renderTrain();
+}
+function moveByKey(u, d) {
+  const p = plan(), f = findItem(p, u); if (!f) return;
+  const j = f.i + d; if (j < 0 || j >= p[f.b].length) return;
+  [p[f.b][f.i], p[f.b][j]] = [p[f.b][j], p[f.b][f.i]]; persist(); renderTrain();
+}
+function gotoPicker(type) {
+  state.pickType = type; persist(); renderPicker();
+  const el = $('#picker');
+  if (window.matchMedia('(min-width:980px)').matches) return;
+  el.scrollIntoView({ behavior:RM.matches ? 'auto' : 'smooth', block:'start' });
+}
+
+/* ---------- bottom sheet ---------- */
+const sheet = $('#sheet'), scrim = $('#scrim'), sbody = $('#sheetBody'), shead = $('#sheetHead');
+const SH = { open:false, y:0, h:0, sp:null, id:null, from:null, drag:null, closing:false };
+function sheetHTML(a) {
+  const gearTxt = a.gear.map(x => { const o = x.endsWith('?'), id = o ? x.slice(0, -1) : x; return `<span class="tag">${GEAR[id].n}${o ? ' (volitelně)' : GEAR[id].stock ? ' · ' + GEAR[id].stock : ''}</span>`; }).join('');
+  return `<div class="meta"><span class="tag t-${a.type}">${TYPES[a.type].n}</span><span class="tag">${a.min} min</span>${a.skills.map(s => `<span class="tag">${SKILLS[s]}</span>`).join('')}<span class="tag">${GRP_LABEL[a.grp]}</span></div>
+    <p class="fun"><b>Proč to děti baví:</b> ${esc(a.fun)}</p>
+    <h3>Pomůcky</h3><div class="gchips">${gearTxt}</div>
+    <h3>Příprava</h3><p>${esc(a.prep)}</p>
+    <h3>Postup</h3><ol>${a.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+    <h3>Na co dohlížet</h3><ul>${a.tips.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+    <div class="duo"><div class="mini ok"><h4>Ulehčit</h4>${esc(a.easier)}</div><div class="mini hard"><h4>Zpřísnit</h4>${esc(a.harder)}</div></div>`;
+}
+function setSheetY(y) {
+  SH.y = y; sheet.style.transform = `translate3d(0,${y}px,0)`;
+  scrim.style.opacity = String(Math.max(0, Math.min(1, 1 - y / (SH.h || 1))));
+}
+function openSheet(id, from) {
+  const a = ACT[id]; if (!a) return;
+  if (SH.sp) SH.sp.stop();
+  SH.id = id; SH.from = from || document.activeElement; SH.closing = false;
+  $('#sheetTitle').textContent = a.name; $('#sheetSub').textContent = `${TYPES[a.type].n} · ${a.min} min · ${GRP_LABEL[a.grp]}`;
+  sbody.innerHTML = sheetHTML(a); sbody.scrollTop = 0;
+  $('#sheetAdd').textContent = `Přidat do bloku „${TYPES[a.type].block}“`;
+  const wasOpen = SH.open;
+  sheet.hidden = false; scrim.hidden = false;
+  SH.h = sheet.offsetHeight;
+  if (!wasOpen) { setSheetY(RM.matches ? 0 : SH.h); }
+  SH.open = true;
+  $('#hdr').inert = true; $('#app').inert = true;
+  SH.sp = spring({ from:SH.y, to:0, response:.5, damping:.86, onUpdate:setSheetY });
+  sheet.focus({ preventScroll:true });
+}
+function closeSheet(velocity = 0, instant = false) {
+  if (!SH.open || SH.closing) return;
+  SH.closing = true; if (SH.sp) SH.sp.stop();
+  const finish = () => {
+    sheet.hidden = true; scrim.hidden = true; SH.open = false; SH.closing = false;
+    $('#hdr').inert = false; $('#app').inert = false;
+    if (SH.from && document.contains(SH.from) && SH.from.focus) SH.from.focus({ preventScroll:true });
+  };
+  if (instant) { finish(); return; }
+  SH.sp = spring({ from:SH.y, to:SH.h + 8, velocity, response:.38, damping:1, eps:.5, onUpdate:setSheetY, onDone:finish });
+}
+const rubber = (d, dim = 140, c = .55) => (d < 0 ? -1 : 1) * (1 - 1 / ((Math.abs(d) * c / dim) + 1)) * dim;
+shead.addEventListener('pointerdown', e => {
+  if (!SH.open) return;
+  if (e.target.closest('button')) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  if (SH.sp) SH.sp.stop(); SH.closing = false;
+  SH.drag = { pid:e.pointerId, sy:e.clientY, y0:SH.y, samples:[{ t:performance.now(), y:e.clientY }] };
+  shead.setPointerCapture(e.pointerId);
+});
+shead.addEventListener('pointermove', e => {
+  const d = SH.drag; if (!d || e.pointerId !== d.pid) return;
+  const raw = d.y0 + (e.clientY - d.sy);
+  setSheetY(raw < 0 ? rubber(raw) : raw);
+  d.samples.push({ t:performance.now(), y:e.clientY }); if (d.samples.length > 8) d.samples.shift();
+});
+function endSheetDrag(e, cancel) {
+  const d = SH.drag; if (!d || e.pointerId !== d.pid) return; SH.drag = null;
+  const s = d.samples, now = performance.now(), recent = s.filter(x => now - x.t < 120);
+  let v = 0;
+  if (recent.length > 1) { const a = recent[0], b = recent[recent.length - 1]; if (b.t > a.t) v = (b.y - a.y) / (b.t - a.t) * 1000; }
+  const projected = SH.y + v * .18;
+  if (!cancel && (projected > SH.h * .45 || v > 900) && SH.y > 12) closeSheet(v);
+  else SH.sp = spring({ from:SH.y, to:0, velocity:v, response:.45, damping:.8, onUpdate:setSheetY });
+}
+shead.addEventListener('pointerup', e => endSheetDrag(e, false));
+shead.addEventListener('pointercancel', e => endSheetDrag(e, true));
+scrim.addEventListener('click', () => closeSheet());
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && SH.open) closeSheet(); });
+window.addEventListener('resize', () => { if (SH.open && !SH.drag) { SH.h = sheet.offsetHeight; } });
+
+/* ---------- drag & drop (úchyt → blok) ---------- */
+let D = null;
+const dropLine = document.createElement('div'); dropLine.className = 'drop-line'; dropLine.setAttribute('aria-hidden', 'true');
+const headerH = () => $('#hdr').offsetHeight;
+document.addEventListener('pointerdown', e => {
+  const grip = e.target.closest && e.target.closest('[data-grip]'); if (!grip || D) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  const src = grip.closest('[data-drag]'); if (!src) return;
+  e.preventDefault();
+  const r = src.getBoundingClientRect();
+  D = { pid:e.pointerId, grip, src, kind:src.dataset.drag, aid:src.dataset.aid, uid:src.dataset.uid || null, sx:e.clientX, sy:e.clientY, x:e.clientX, y:e.clientY,
+        offX:e.clientX - r.left, offY:e.clientY - r.top, vx:0, vy:0, lt:performance.now(), started:false, ghost:null, lift:0, liftSp:null, target:null, raf:0 };
+  grip.classList.add('pressed');
+  try { grip.setPointerCapture(e.pointerId); } catch (_) { /* nic */ }
+});
+document.addEventListener('pointermove', e => {
+  if (!D || e.pointerId !== D.pid) return;
+  const now = performance.now(), dt = Math.max(1, now - D.lt);
+  D.vx = D.vx * .6 + (e.clientX - D.x) / dt * 1000 * .4; D.vy = D.vy * .6 + (e.clientY - D.y) / dt * 1000 * .4; D.lt = now;
+  D.x = e.clientX; D.y = e.clientY;
+  if (!D.started) { if (Math.hypot(D.x - D.sx, D.y - D.sy) < 4) return; beginDrag(); }
+  moveGhost(); updateTarget();
+});
+document.addEventListener('pointerup', e => { if (D && e.pointerId === D.pid) endDrag(true); });
+document.addEventListener('pointercancel', e => { if (D && e.pointerId === D.pid) endDrag(false); });
+function beginDrag() {
+  D.started = true;
+  const r = D.src.getBoundingClientRect(), g = D.src.cloneNode(true);
+  g.classList.add('ghost'); ['data-drag', 'data-uid', 'data-aid'].forEach(a => g.removeAttribute(a));
+  g.querySelectorAll('[data-grip],[data-act],[data-fk]').forEach(n => { n.removeAttribute('data-grip'); n.removeAttribute('data-act'); n.removeAttribute('data-fk'); });
+  g.style.width = r.width + 'px'; g.style.transformOrigin = `${D.offX}px ${D.offY}px`; g.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(g); D.ghost = g;
+  D.src.classList.add('is-src'); document.body.classList.add('is-dragging');
+  D.liftSp = spring({ from:0, to:1, response:.3, damping:.7, eps:.002, onUpdate:v => { D.lift = v; moveGhost(); } });
+  moveGhost(); updateTarget();
+  const auto = () => {
+    if (!D || !D.started) return;
+    const top = headerH() + 28, bot = innerHeight - 70; let dy = 0;
+    if (D.y < top) dy = -Math.min(20, (top - D.y) / 3 + 2); else if (D.y > bot) dy = Math.min(20, (D.y - bot) / 3 + 2);
+    if (dy) { window.scrollBy(0, dy); updateTarget(); }
+    D.raf = requestAnimationFrame(auto);
+  };
+  D.raf = requestAnimationFrame(auto);
+}
+function moveGhost() { if (D && D.ghost) D.ghost.style.transform = `translate3d(${D.x - D.offX}px,${D.y - D.offY}px,0) scale(${1 + .035 * D.lift})`; }
+function updateTarget() {
+  let t = null;
+  for (const list of $$('[data-list]')) {
+    const box = list.closest('[data-block]'), r = box.getBoundingClientRect(), m = 10;
+    if (D.x >= r.left - m && D.x <= r.right + m && D.y >= r.top - m && D.y <= r.bottom + m) {
+      const rows = $$('.arow', list).filter(n => !n.classList.contains('is-src'));
+      let idx = 0; for (const n of rows) { const rr = n.getBoundingClientRect(); if (D.y > rr.top + rr.height / 2) idx++; else break; }
+      t = { block:list.dataset.list, index:idx, list, rows }; break;
+    }
+  }
+  D.target = t;
+  $$('.block.drop-on').forEach(b => { if (!t || b !== t.list.closest('.block')) b.classList.remove('drop-on'); });
+  if (!t) { dropLine.remove(); return; }
+  t.list.closest('.block').classList.add('drop-on');
+  let y = 0;
+  if (t.rows.length) { y = t.index < t.rows.length ? t.rows[t.index].offsetTop - 3 : t.rows[t.rows.length - 1].offsetTop + t.rows[t.rows.length - 1].offsetHeight + 1; }
+  else dropLine.style.display = 'none';
+  if (t.rows.length) dropLine.style.display = '';
+  if (dropLine.parentNode !== t.list) t.list.appendChild(dropLine);
+  dropLine.style.transform = `translate3d(0,${y}px,0)`;
+}
+function flyGhost(d, tx, ty, fade, done) {
+  const g = d.ghost; if (!g) { done && done(); return; }
+  const fx = d.x - d.offX, fy = d.y - d.offY; let nx = fx, ny = fy, fin = 0;
+  const end = () => { if (++fin === 2) { g.remove(); done && done(); } };
+  if (fade) { g.style.transition = 'opacity .24s .06s'; g.style.opacity = '0'; }
+  const upd = () => { g.style.transform = `translate3d(${nx}px,${ny}px,0) scale(${1 + .035 * (d.lift || 0)})`; };
+  spring({ from:fx, to:tx, velocity:d.vx, response:.4, damping:.78, onUpdate:v => { nx = v; upd(); }, onDone:end });
+  spring({ from:fy, to:ty, velocity:d.vy, response:.4, damping:.78, onUpdate:v => { ny = v; upd(); }, onDone:end });
+}
+function endDrag(commitIt) {
+  const d = D; D = null; cancelAnimationFrame(d.raf);
+  d.grip.classList.remove('pressed'); try { d.grip.releasePointerCapture(d.pid); } catch (_) { /* nic */ }
+  if (!d.started) return;
+  if (d.liftSp) d.liftSp.stop();
+  document.body.classList.remove('is-dragging'); dropLine.remove(); $$('.drop-on').forEach(b => b.classList.remove('drop-on'));
+  if (commitIt && d.target) {
+    const t = d.target; let landed = null, msg = '';
+    if (d.kind === 'lib') { const a = ACT[d.aid]; landed = uid(); msg = `Přidáno do bloku „${TYPES[t.block].block}“: ${a.name}`; commit(msg, p => { p[t.block].splice(Math.min(t.index, p[t.block].length), 0, { uid:landed, id:d.aid, min:a.min }); }); }
+    else { landed = d.uid; commit('', p => { const f = findItem(p, d.uid); if (!f) return; p[f.b].splice(f.i, 1); p[t.block].splice(Math.min(t.index, p[t.block].length), 0, f.it); }); }
+    $$('.is-src').forEach(n => n.classList.remove('is-src'));
+    const el = $(`.arow[data-uid="${landed}"]`);
+    if (el) { el.style.visibility = 'hidden'; const r = el.getBoundingClientRect(); flyGhost(d, r.left, r.top, true, () => { el.style.visibility = ''; el.classList.add('landed'); }); }
+    else d.ghost.remove();
+  } else {
+    const r = d.src.getBoundingClientRect();
+    flyGhost(d, r.left, r.top, false, () => { d.src.classList.remove('is-src'); });
+  }
+}
+/* klávesnice: šipky na úchytu přeřadí aktivitu v bloku */
+document.addEventListener('keydown', e => {
+  const grip = e.target.closest && e.target.closest('.arow [data-grip]'); if (!grip) return;
+  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); moveByKey(grip.closest('.arow').dataset.uid, e.key === 'ArrowUp' ? -1 : 1); }
+});
+
+/* ---------- delegované události ---------- */
+document.addEventListener('pointerdown', e => {
+  const t = e.target.closest && e.target.closest('.tap'); if (!t) return;
+  t.classList.add('pressed');
+  const off = () => { t.classList.remove('pressed'); ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => t.removeEventListener(n, off)); };
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => t.addEventListener(n, off));
+}, { passive:true });
+document.addEventListener('touchstart', () => {}, { passive:true });      /* aktivuje :active v iOS Safari */
+
+document.addEventListener('click', e => {
+  const el = e.target.closest && e.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act;
+  if (el.tagName === 'INPUT') return;                                      /* přepínače řeší change */
+  switch (a) {
+    case 'tab': setTab(el.dataset.t); break;
+    case 'group': setGroup(el.dataset.g); break;
+    case 'detail': openSheet(el.dataset.id, el); break;
+    case 'sheet-close': closeSheet(); break;
+    case 'sheet-add': { const a2 = ACT[SH.id]; closeSheet(); addActivity(SH.id, a2.type); break; }
+    case 'add': addActivity(el.dataset.id); break;
+    case 'remove': {
+      const p = plan(), f = findItem(p, el.dataset.uid); if (!f) break;
+      const name = ACT[f.it.id].name; commit(`Odebráno: ${name}`, q => { const x = findItem(q, el.dataset.uid); if (x) q[x.b].splice(x.i, 1); }); break;
+    }
+    case 'min': changeMin(el.dataset.uid, +el.dataset.d); break;
+    case 'equalize': { const b = el.dataset.b; commit('', p => equalizeItems(p[b], targetOf(p, b))); break; }
+    case 'gamelen': { const v = +el.dataset.v; commit('', p => { p.gameLen = v; }); break; }
+    case 'suggest': doSuggest(); break;
+    case 'clear': doClear(); break;
+    case 'save': doSave(); break;
+    case 'load': doLoad(el.dataset.id); break;
+    case 'del-saved': doDelSaved(el.dataset.id); break;
+    case 'goto-picker': gotoPicker(el.dataset.type); break;
+    case 'pick-type': state.pickType = el.dataset.v; persist(); renderPicker(); break;
+    case 'lib-type': state.libType = el.dataset.v; persist(); renderLib(); break;
+    case 'lib-skill': state.libSkill = el.dataset.v; persist(); renderLib(); break;
+    case 'open-week': openWeek(+el.dataset.w); break;
+    case 'toast-undo': { const u = toastUndo; toastUndo = null; hideToast(); if (u) u(); break; }
+  }
+});
+document.addEventListener('change', e => {
+  const el = e.target.closest && e.target.closest('[data-act]'); if (!el) return;
+  if (el.dataset.act === 'show-other') { state.showOther = el.checked; persist(); if (state.tab === 'knihovna') renderLib(); else renderPicker(); }
+  if (el.dataset.act === 'done') { state.done[state.group][+el.dataset.w] = el.checked; persist(); renderPlan(); renderNext(); }
+});
+document.addEventListener('click', e => {
+  const sm = e.target.closest && e.target.closest('.phase > summary'); if (!sm) return;
+  const d = sm.parentNode;
+  setTimeout(() => { state.phaseOpen[state.group][+d.dataset.ph] = d.open; persist(); }, 0);
+});
+$('#notes').addEventListener('input', e => { plan().notes = e.target.value; persist(); });
+$('#saveName').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSave(); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) renderNext(); });
+
+/* výška hlavičky pro sticky sloupec */
+const hdrObs = () => document.documentElement.style.setProperty('--hdr-h', headerH() + 'px');
+if ('ResizeObserver' in window) new ResizeObserver(hdrObs).observe($('#hdr')); hdrObs();
+
+/* ---------- start ---------- */
+if (!hadStored) { // první spuštění: předvyber skupinu, jejíž trénink je nejblíž
+  const a = nextSession(GROUPS.ut).start, b = nextSession(GROUPS.pa).start; state.group = a <= b ? 'ut' : 'pa';
+}
+renderAll();
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
